@@ -27,8 +27,14 @@ This repository contains a ready-to-use SwiftUI app source for a nutrition track
 
 ## Run in Xcode
 
-1. Open Xcode and create a new **iOS App** project (SwiftUI lifecycle).
-2. Add the files from the `NutritionTracker` folder to the project target.
-3. Build and run on simulator or device.
+This repo is now set up with `XcodeGen`, so you can generate and run the project quickly.
+
+1. On your Mac, install XcodeGen (one-time):
+   - `brew install xcodegen`
+2. In this repo folder, generate the Xcode project:
+   - `xcodegen generate`
+3. Open the project:
+   - `open NutritionTracker.xcodeproj`
+4. Select an iOS simulator and press Run in Xcode.
 
 The app uses `UserDefaults` for local persistence, so data survives app restarts.

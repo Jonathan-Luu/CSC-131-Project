@@ -1,0 +1,40 @@
+name: NutritionTracker
+options:
+  minimumXcodeGenVersion: 2.38.0
+settings:
+  base:
+    PRODUCT_BUNDLE_IDENTIFIER: com.landon.nutritiontracker
+    MARKETING_VERSION: 1.0
+    CURRENT_PROJECT_VERSION: 1
+    SWIFT_VERSION: 5.0
+    IPHONEOS_DEPLOYMENT_TARGET: 16.0
+targets:
+  NutritionTracker:
+    type: application
+    platform: iOS
+    deploymentTarget: "16.0"
+    sources:
+      - path: NutritionTracker
+        includes:
+          - "*.swift"
+    info:
+      path: NutritionTracker/Info.plist
+    settings:
+      base:
+        PRODUCT_NAME: NutritionTracker
+        INFOPLIST_KEY_UILaunchScreen_Generation: "YES"
+        INFOPLIST_KEY_UIApplicationSceneManifest_Generation: "YES"
+        INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents: "YES"
+        INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone: UIInterfaceOrientationPortrait
+        GENERATE_INFOPLIST_FILE: "NO"
+schemes:
+  NutritionTracker:
+    build:
+      targets:
+        NutritionTracker: all
+    run:
+      config: Debug
+    test:
+      config: Debug
+    archive:
+      config: Release
