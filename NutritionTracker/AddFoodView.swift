@@ -15,6 +15,8 @@ struct AddFoodView: View {
     @State private var showValidation = false
 
     @State private var searchText = ""
+    @State private var browseGroup: FoodBrowseGroup = .all
+    @State private var meatSubfilter: FoodMeatSubfilter = .all
     @State private var selectedItem: FoundationFoodItem?
     @State private var portionGrams = "100"
 
@@ -103,9 +105,26 @@ struct AddFoodView: View {
             } else {
                 List {
                     Section {
+                        Picker("Category", selection: $browseGroup) {
+                            ForEach(FoodBrowseGroup.allCases) { g in
+                                Text(g.rawValue).tag(g)
+                            }
+                        }
+                        if browseGroup == .meatPoultry {
+                            Picker("Type", selection: $meatSubfilter) {
+                                ForEach(FoodMeatSubfilter.allCases) { s in
+                                    Text(s.rawValue).tag(s)
+                                }
+                            }
+                        }
                         TextField("Search foods", text: $searchText)
+                            .textInputAutocapitalization(.never)
+                            .autocorrectionDisabled()
+                        Text("Pick a broad category, then search by any word—order does not need to match the full name.")
+                            .font(.caption)
+                            .foregroundStyle(.secondary)
                     }
-                    ForEach(foodDatabase.search(searchText)) { item in
+                    ForEach(foodDatabase.search(searchText, browse: browseGroup, meatSubfilter: meatSubfilter)) { item in
                         Button {
                             selectedItem = item
                             portionGrams = "100"
@@ -113,6 +132,11 @@ struct AddFoodView: View {
                             VStack(alignment: .leading, spacing: 4) {
                                 Text(item.description)
                                     .foregroundStyle(.primary)
+                                if let cat = item.fdcCategoryDescription {
+                                    Text(cat)
+                                        .font(.caption)
+                                        .foregroundStyle(.tertiary)
+                                }
                                 Text("Tap to choose portion (per 100 g in database)")
                                     .font(.caption)
                                     .foregroundStyle(.secondary)
