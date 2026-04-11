@@ -12,9 +12,9 @@ final class NutritionStore: ObservableObject {
     }
 
     private let defaults = UserDefaults.standard
-    private let goalKey = "nutrition.goal"
-    private let entriesKey = "nutrition.entries"
-    private let profileKey = "nutrition.profile"
+    private static let goalKey = "nutrition.goal"
+    private static let entriesKey = "nutrition.entries"
+    private static let profileKey = "nutrition.profile"
 
     private let recommendationPool: [RecommendedFood] = [
         RecommendedFood(name: "Greek Yogurt (1 cup)", nutrients: [1008: 130, 1003: 23, 1253: 15]),
@@ -29,8 +29,8 @@ final class NutritionStore: ObservableObject {
 
     init() {
         self.goal = Self.loadGoal()
-        self.entries = Self.loadObject(forKey: entriesKey, defaultValue: [])
-        self.profile = Self.loadObject(forKey: profileKey, defaultValue: .default)
+        self.entries = Self.loadObject(forKey: Self.entriesKey, defaultValue: [])
+        self.profile = Self.loadObject(forKey: Self.profileKey, defaultValue: .default)
     }
 
     func addFood(name: String, nutrients: [Int: Double]) {
@@ -121,13 +121,13 @@ final class NutritionStore: ObservableObject {
     }
 
     private func persist() {
-        Self.saveObject(goal, forKey: goalKey, defaults: defaults)
-        Self.saveObject(entries, forKey: entriesKey, defaults: defaults)
-        Self.saveObject(profile, forKey: profileKey, defaults: defaults)
+        Self.saveObject(goal, forKey: Self.goalKey, defaults: defaults)
+        Self.saveObject(entries, forKey: Self.entriesKey, defaults: defaults)
+        Self.saveObject(profile, forKey: Self.profileKey, defaults: defaults)
     }
 
     private static func loadGoal() -> NutritionGoal {
-        guard let data = UserDefaults.standard.data(forKey: goalKey) else {
+        guard let data = UserDefaults.standard.data(forKey: Self.goalKey) else {
             return .default
         }
         if let g = try? JSONDecoder().decode(NutritionGoal.self, from: data) {
