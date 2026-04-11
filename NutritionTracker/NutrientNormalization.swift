@@ -27,7 +27,15 @@ enum NutrientNormalization {
     /// kJ → kcal (USDA / FDC convention).
     private static let kilojoulesPerKilocalorie = 4.184
 
+    /// FDC **1005** — Carbohydrate, by difference (g). Same id the app uses for “Carbs” in `NutrientCatalog`.
+    ///
+    /// For some foods (often lean poultry), FDC reports a **small negative** value because the figure is
+    /// derived from proximates and rounding residuals. That is not meaningful as “negative carbs eaten.”
+    /// For logging we treat non-physical negatives as **zero** at normalization time (source of truth for stored entries).
+    static let carbohydrateByDifferenceId = 1005
+
     /// Merge energy variants into **1008** and drop alias keys so daily totals stay correct.
+    /// Sanitizes **1005** so derived negative carb-by-difference never enters the log as a negative contribution.
     static func canonicalizeNutrients(_ raw: [Int: Double]) -> [Int: Double] {
         var m = raw
 
@@ -52,6 +60,10 @@ enum NutrientNormalization {
 
         for id in energyAliasIds {
             m.removeValue(forKey: id)
+        }
+
+        if let carb = m[carbohydrateByDifferenceId], carb < 0 {
+            m[carbohydrateByDifferenceId] = 0
         }
         return m
     }

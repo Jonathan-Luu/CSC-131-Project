@@ -115,7 +115,13 @@ final class NutritionStore: ObservableObject {
     private func totals(for foods: [FoodEntry]) -> [Int: Double] {
         foods.reduce(into: [Int: Double]()) { acc, food in
             for (k, v) in food.nutrients {
-                acc[k, default: 0] += v
+                let contribution: Double
+                if k == NutrientNormalization.carbohydrateByDifferenceId {
+                    contribution = max(0, v)
+                } else {
+                    contribution = v
+                }
+                acc[k, default: 0] += contribution
             }
         }
     }
