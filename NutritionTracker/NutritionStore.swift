@@ -17,24 +17,26 @@ final class NutritionStore: ObservableObject {
     private let profileKey = "nutrition.profile"
 
     private let recommendationPool: [RecommendedFood] = [
-        RecommendedFood(name: "Greek Yogurt (1 cup)", calories: 130, protein: 23, cholesterol: 15),
-        RecommendedFood(name: "Chicken Breast (100g)", calories: 165, protein: 31, cholesterol: 85),
-        RecommendedFood(name: "Lentils (1 cup)", calories: 230, protein: 18, cholesterol: 0),
-        RecommendedFood(name: "Tofu (100g)", calories: 144, protein: 17, cholesterol: 0),
-        RecommendedFood(name: "Salmon (100g)", calories: 208, protein: 20, cholesterol: 55),
-        RecommendedFood(name: "Egg Whites (1 cup)", calories: 126, protein: 27, cholesterol: 0),
-        RecommendedFood(name: "Cottage Cheese (1 cup)", calories: 206, protein: 28, cholesterol: 25),
-        RecommendedFood(name: "Oatmeal (1 cup)", calories: 154, protein: 6, cholesterol: 0)
+        RecommendedFood(name: "Greek Yogurt (1 cup)", nutrients: [1008: 130, 1003: 23, 1253: 15]),
+        RecommendedFood(name: "Chicken Breast (100g)", nutrients: [1008: 165, 1003: 31, 1253: 85]),
+        RecommendedFood(name: "Lentils (1 cup)", nutrients: [1008: 230, 1003: 18, 1253: 0, 1079: 16]),
+        RecommendedFood(name: "Tofu (100g)", nutrients: [1008: 144, 1003: 17, 1253: 0]),
+        RecommendedFood(name: "Salmon (100g)", nutrients: [1008: 208, 1003: 20, 1253: 55]),
+        RecommendedFood(name: "Egg Whites (1 cup)", nutrients: [1008: 126, 1003: 27, 1253: 0]),
+        RecommendedFood(name: "Cottage Cheese (1 cup)", nutrients: [1008: 206, 1003: 28, 1253: 25]),
+        RecommendedFood(name: "Oatmeal (1 cup)", nutrients: [1008: 154, 1003: 6, 1253: 0, 1079: 4]),
     ]
 
     init() {
-        self.goal = Self.loadObject(forKey: goalKey, defaultValue: .default)
+        self.goal = Self.loadGoal()
         self.entries = Self.loadObject(forKey: entriesKey, defaultValue: [])
         self.profile = Self.loadObject(forKey: profileKey, defaultValue: .default)
     }
 
-    func addFood(name: String, calories: Double, protein: Double, cholesterol: Double) {
-        let food = FoodEntry(name: name, calories: calories, protein: protein, cholesterol: cholesterol)
+    func addFood(name: String, nutrients: [Int: Double]) {
+        let trimmed = name.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard !trimmed.isEmpty else { return }
+        let food = FoodEntry(name: trimmed, nutrients: nutrients)
         entries.insert(food, at: 0)
     }
 
@@ -42,11 +44,11 @@ final class NutritionStore: ObservableObject {
         entries.remove(atOffsets: offsets)
     }
 
-    func updateGoal(calories: Double, protein: Double, cholesterol: Double) {
-        goal = NutritionGoal(calories: calories, protein: protein, cholesterol: cholesterol)
+    func updateGoal(targets: [Int: Double]) {
+        goal = NutritionGoal(targets: targets)
     }
 
-    var todaysTotals: (calories: Double, protein: Double, cholesterol: Double) {
+    var todaysTotals: [Int: Double] {
         totals(for: entries.filter { Calendar.current.isDateInToday($0.date) })
     }
 
@@ -58,13 +60,11 @@ final class NutritionStore: ObservableObject {
         return grouped
             .map { date, dayEntries in
                 let t = totals(for: dayEntries)
-                let met = t.calories >= goal.calories && t.protein >= goal.protein && t.cholesterol <= goal.cholesterol
+                let met = NutrientCatalog.goalsMet(totals: t, targets: goal.targets)
                 return DailySummary(
                     id: date,
                     date: date,
-                    calories: t.calories,
-                    protein: t.protein,
-                    cholesterol: t.cholesterol,
+                    totals: t,
                     metGoal: met
                 )
             }
@@ -80,15 +80,18 @@ final class NutritionStore: ObservableObject {
 
     func recommendedFoods() -> [RecommendedFood] {
         let today = todaysTotals
-        let calorieDeficit = max(goal.calories - today.calories, 0)
-        let proteinDeficit = max(goal.protein - today.protein, 0)
-        let cholesterolOver = max(today.cholesterol - goal.cholesterol, 0)
+        let calorieDeficit = max((goal.targets[1008] ?? 0) - (today[1008] ?? 0), 0)
+        let proteinDeficit = max((goal.targets[1003] ?? 0) - (today[1003] ?? 0), 0)
+        let cholesterolOver = max((today[1253] ?? 0) - (goal.targets[1253] ?? 0), 0)
 
         let scored = recommendationPool.map { food in
+            let cals = food.nutrients[1008] ?? 0
+            let prot = food.nutrients[1003] ?? 0
+            let chol = food.nutrients[1253] ?? 0
             let deficitHelp =
-                min(food.calories, calorieDeficit) * 0.3 +
-                min(food.protein, proteinDeficit) * 3.0
-            let cholesterolPenalty = cholesterolOver > 0 ? (food.cholesterol * 0.8) : 0
+                min(cals, calorieDeficit) * 0.3 +
+                min(prot, proteinDeficit) * 3.0
+            let cholesterolPenalty = cholesterolOver > 0 ? (chol * 0.8) : 0
             let score = deficitHelp - cholesterolPenalty
             return (food, score)
         }
@@ -109,13 +112,11 @@ final class NutritionStore: ObservableObject {
         return base * profile.activityMultiplier
     }
 
-    private func totals(for foods: [FoodEntry]) -> (calories: Double, protein: Double, cholesterol: Double) {
-        foods.reduce((0, 0, 0)) { partial, food in
-            (
-                partial.calories + food.calories,
-                partial.protein + food.protein,
-                partial.cholesterol + food.cholesterol
-            )
+    private func totals(for foods: [FoodEntry]) -> [Int: Double] {
+        foods.reduce(into: [Int: Double]()) { acc, food in
+            for (k, v) in food.nutrients {
+                acc[k, default: 0] += v
+            }
         }
     }
 
@@ -123,6 +124,28 @@ final class NutritionStore: ObservableObject {
         Self.saveObject(goal, forKey: goalKey, defaults: defaults)
         Self.saveObject(entries, forKey: entriesKey, defaults: defaults)
         Self.saveObject(profile, forKey: profileKey, defaults: defaults)
+    }
+
+    private static func loadGoal() -> NutritionGoal {
+        guard let data = UserDefaults.standard.data(forKey: goalKey) else {
+            return .default
+        }
+        if let g = try? JSONDecoder().decode(NutritionGoal.self, from: data) {
+            return g
+        }
+        struct LegacyGoal: Codable {
+            let calories: Double
+            let protein: Double
+            let cholesterol: Double
+        }
+        if let legacy = try? JSONDecoder().decode(LegacyGoal.self, from: data) {
+            var t = NutrientCatalog.defaultGoals
+            t[1008] = legacy.calories
+            t[1003] = legacy.protein
+            t[1253] = legacy.cholesterol
+            return NutritionGoal(targets: t)
+        }
+        return .default
     }
 
     private static func loadObject<T: Codable>(forKey key: String, defaultValue: T) -> T {

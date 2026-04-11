@@ -3,36 +3,54 @@ import SwiftUI
 struct GoalsView: View {
     @EnvironmentObject private var store: NutritionStore
 
-    @State private var calories: String = ""
-    @State private var protein: String = ""
-    @State private var cholesterol: String = ""
+    @State private var draft: [Int: String] = [:]
     @State private var showValidation = false
 
     var body: some View {
         NavigationStack {
             Form {
-                Section("Set Daily Goal") {
-                    TextField("Calories (kcal)", text: $calories)
-                        .keyboardType(.decimalPad)
-                    TextField("Protein (g)", text: $protein)
-                        .keyboardType(.decimalPad)
-                    TextField("Cholesterol max (mg)", text: $cholesterol)
-                        .keyboardType(.decimalPad)
-                    Button("Save Goal") {
+                ForEach(NutrientCategory.allCases, id: \.self) { category in
+                    let defs = NutrientCatalog.tracked.filter { $0.category == category }
+                    if !defs.isEmpty {
+                        Section(category.rawValue) {
+                            ForEach(defs) { def in
+                                HStack {
+                                    Text(def.name)
+                                    Spacer()
+                                    TextField(
+                                        def.unit,
+                                        text: Binding(
+                                            get: { draft[def.id] ?? "" },
+                                            set: { draft[def.id] = $0 }
+                                        )
+                                    )
+                                    .keyboardType(.decimalPad)
+                                    .multilineTextAlignment(.trailing)
+                                    .frame(maxWidth: 120)
+                                }
+                            }
+                        }
+                    }
+                }
+
+                Section {
+                    Button("Save Goals") {
                         saveGoal()
                     }
                 }
 
                 if showValidation {
-                    Text("Please enter valid numeric values.")
-                        .foregroundStyle(.red)
-                        .font(.footnote)
+                    Section {
+                        Text("Enter valid numbers for goals you want to set. Leave blank or use 0 to ignore a nutrient in streaks.")
+                            .foregroundStyle(.red)
+                            .font(.footnote)
+                    }
                 }
 
-                Section("Current Goal") {
-                    Text("Calories: \(store.goal.calories, specifier: "%.0f") kcal")
-                    Text("Protein: \(store.goal.protein, specifier: "%.0f") g")
-                    Text("Cholesterol: \(store.goal.cholesterol, specifier: "%.0f") mg max")
+                Section("Current streak rule") {
+                    Text("A day counts when every non-zero goal is met: minimums reached (or maximums not exceeded for cholesterol and sodium).")
+                        .font(.footnote)
+                        .foregroundStyle(.secondary)
                 }
 
                 Section("Consistency") {
@@ -41,27 +59,44 @@ struct GoalsView: View {
             }
             .navigationTitle("Goals")
             .onAppear {
-                calories = String(format: "%.0f", store.goal.calories)
-                protein = String(format: "%.0f", store.goal.protein)
-                cholesterol = String(format: "%.0f", store.goal.cholesterol)
+                syncDraftFromStore()
             }
         }
     }
 
-    private func saveGoal() {
-        guard
-            let caloriesValue = Double(calories),
-            let proteinValue = Double(protein),
-            let cholesterolValue = Double(cholesterol),
-            caloriesValue > 0,
-            proteinValue > 0,
-            cholesterolValue >= 0
-        else {
-            showValidation = true
-            return
+    private func syncDraftFromStore() {
+        var next: [Int: String] = [:]
+        for def in NutrientCatalog.tracked {
+            let g = store.goal.targets[def.id] ?? 0
+            if g > 0 {
+                next[def.id] = formatGoal(g)
+            } else {
+                next[def.id] = ""
+            }
         }
+        draft = next
+    }
 
-        store.updateGoal(calories: caloriesValue, protein: proteinValue, cholesterol: cholesterolValue)
+    private func formatGoal(_ g: Double) -> String {
+        if g.rounded() == g { return String(format: "%.0f", g) }
+        return String(format: "%.2f", g)
+    }
+
+    private func saveGoal() {
+        var targets: [Int: Double] = [:]
+        for def in NutrientCatalog.tracked {
+            let raw = draft[def.id]?.trimmingCharacters(in: .whitespacesAndNewlines) ?? ""
+            if raw.isEmpty {
+                targets[def.id] = 0
+                continue
+            }
+            guard let v = Double(raw), v >= 0 else {
+                showValidation = true
+                return
+            }
+            targets[def.id] = v
+        }
+        store.updateGoal(targets: targets)
         showValidation = false
     }
 }

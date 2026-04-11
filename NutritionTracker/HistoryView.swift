@@ -11,10 +11,10 @@ struct HistoryView: View {
                         .foregroundStyle(.secondary)
                 } else {
                     ForEach(store.entries) { entry in
-                        VStack(alignment: .leading, spacing: 4) {
+                        VStack(alignment: .leading, spacing: 6) {
                             Text(entry.name)
                                 .font(.headline)
-                            Text("\(entry.calories, specifier: "%.0f") kcal | \(entry.protein, specifier: "%.0f")g protein | \(entry.cholesterol, specifier: "%.0f")mg cholesterol")
+                            Text(summaryLine(for: entry))
                                 .font(.subheadline)
                                 .foregroundStyle(.secondary)
                             Text(entry.date.formatted(date: .abbreviated, time: .shortened))
@@ -31,5 +31,16 @@ struct HistoryView: View {
                 EditButton()
             }
         }
+    }
+
+    private func summaryLine(for entry: FoodEntry) -> String {
+        let c = entry.nutrients[1008].map { String(format: "%.0f kcal", $0) }
+        let p = entry.nutrients[1003].map { String(format: "%.0fg protein", $0) }
+        let f = entry.nutrients[1079].map { String(format: "%.1fg fiber", $0) }
+        let parts = [c, p, f].compactMap { $0 }
+        if parts.isEmpty {
+            return "\(entry.nutrients.count) nutrient values"
+        }
+        return parts.joined(separator: " · ")
     }
 }

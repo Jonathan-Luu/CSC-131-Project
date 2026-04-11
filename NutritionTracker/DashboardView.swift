@@ -3,35 +3,22 @@ import SwiftUI
 struct DashboardView: View {
     @EnvironmentObject private var store: NutritionStore
 
-    private var totals: (calories: Double, protein: Double, cholesterol: Double) {
+    private var totals: [Int: Double] {
         store.todaysTotals
     }
 
     var body: some View {
         NavigationStack {
             List {
-                Section("Today's Nutrients") {
-                    nutrientRow(
-                        label: "Calories",
-                        value: totals.calories,
-                        goal: store.goal.calories,
-                        unit: "kcal",
-                        prefersLess: false
-                    )
-                    nutrientRow(
-                        label: "Protein",
-                        value: totals.protein,
-                        goal: store.goal.protein,
-                        unit: "g",
-                        prefersLess: false
-                    )
-                    nutrientRow(
-                        label: "Cholesterol",
-                        value: totals.cholesterol,
-                        goal: store.goal.cholesterol,
-                        unit: "mg",
-                        prefersLess: true
-                    )
+                ForEach(NutrientCategory.allCases, id: \.self) { category in
+                    let defs = NutrientCatalog.tracked.filter { $0.category == category }
+                    if !defs.isEmpty {
+                        Section(category.rawValue) {
+                            ForEach(defs) { def in
+                                nutrientRow(def: def, value: totals[def.id] ?? 0)
+                            }
+                        }
+                    }
                 }
 
                 Section("Goal Consistency") {
@@ -48,31 +35,40 @@ struct DashboardView: View {
         }
     }
 
-    private func nutrientRow(
-        label: String,
-        value: Double,
-        goal: Double,
-        unit: String,
-        prefersLess: Bool
-    ) -> some View {
-        VStack(alignment: .leading, spacing: 6) {
+    private func nutrientRow(def: NutrientCatalog.Definition, value: Double) -> some View {
+        let goal = store.goal.targets[def.id] ?? 0
+        return VStack(alignment: .leading, spacing: 6) {
             HStack {
-                Text(label)
+                Text(def.name)
                 Spacer()
-                Text("\(value, specifier: "%.0f") / \(goal, specifier: "%.0f") \(unit)")
-                    .font(.subheadline)
-                    .foregroundStyle(.secondary)
+                if goal > 0 {
+                    Text("\(format(value)) / \(format(goal)) \(def.unit)")
+                        .font(.subheadline)
+                        .foregroundStyle(.secondary)
+                } else {
+                    Text("\(format(value)) \(def.unit)")
+                        .font(.subheadline)
+                        .foregroundStyle(.secondary)
+                }
             }
 
-            ProgressView(value: normalizedProgress(value: value, goal: goal, prefersLess: prefersLess))
-                .tint(prefersLess && value > goal ? .red : .green)
+            if goal > 0 {
+                ProgressView(value: normalizedProgress(value: value, goal: goal, prefersLess: def.goalIsMaximum))
+                    .tint(def.goalIsMaximum && value > goal ? .red : .green)
+            }
         }
+    }
+
+    private func format(_ x: Double) -> String {
+        if x >= 100 { return String(format: "%.0f", x) }
+        if x >= 10 { return String(format: "%.1f", x) }
+        return String(format: "%.2f", x)
     }
 
     private func normalizedProgress(value: Double, goal: Double, prefersLess: Bool) -> Double {
         guard goal > 0 else { return 0 }
         if prefersLess {
-            return min(goal / max(value, 1), 1)
+            return min(goal / max(value, 0.0001), 1)
         }
         return min(value / goal, 1)
     }

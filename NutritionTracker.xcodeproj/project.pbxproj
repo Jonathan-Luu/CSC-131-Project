@@ -17,6 +17,9 @@
 		A1B2C3D4E5F6000000000108 /* GoalsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1B2C3D4E5F6000000000208 /* GoalsView.swift */; };
 		A1B2C3D4E5F6000000000109 /* RecommendationsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1B2C3D4E5F6000000000209 /* RecommendationsView.swift */; };
 		A1B2C3D4E5F6000000000110 /* BMRCalculatorView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1B2C3D4E5F6000000000210 /* BMRCalculatorView.swift */; };
+		A1B2C3D4E5F6000000000111 /* NutrientCatalog.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1B2C3D4E5F6000000000212 /* NutrientCatalog.swift */; };
+		A1B2C3D4E5F6000000000112 /* FoundationFoodDatabase.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1B2C3D4E5F6000000000213 /* FoundationFoodDatabase.swift */; };
+		A1B2C3D4E5F6000000000113 /* FoodData_Central_foundation_food_json_2025-12-18.json in Resources */ = {isa = PBXBuildFile; fileRef = A1B2C3D4E5F6000000000214 /* FoodData_Central_foundation_food_json_2025-12-18.json */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -32,6 +35,9 @@
 		A1B2C3D4E5F6000000000209 /* RecommendationsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RecommendationsView.swift; sourceTree = "<group>"; };
 		A1B2C3D4E5F6000000000210 /* BMRCalculatorView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BMRCalculatorView.swift; sourceTree = "<group>"; };
 		A1B2C3D4E5F6000000000211 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		A1B2C3D4E5F6000000000212 /* NutrientCatalog.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NutrientCatalog.swift; sourceTree = "<group>"; };
+		A1B2C3D4E5F6000000000213 /* FoundationFoodDatabase.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FoundationFoodDatabase.swift; sourceTree = "<group>"; };
+		A1B2C3D4E5F6000000000214 /* FoodData_Central_foundation_food_json_2025-12-18.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = FoodData_Central_foundation_food_json_2025-12-18.json; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -49,8 +55,17 @@
 			isa = PBXGroup;
 			children = (
 				A1B2C3D4E5F6000000000010 /* NutritionTracker */,
+				A1B2C3D4E5F6000000000011 /* Databases */,
 				A1B2C3D4E5F6000000000004 /* Products */,
 			);
+			sourceTree = "<group>";
+		};
+		A1B2C3D4E5F6000000000011 /* Databases */ = {
+			isa = PBXGroup;
+			children = (
+				A1B2C3D4E5F6000000000214 /* FoodData_Central_foundation_food_json_2025-12-18.json */,
+			);
+			path = Databases;
 			sourceTree = "<group>";
 		};
 		A1B2C3D4E5F6000000000004 /* Products */ = {
@@ -67,7 +82,9 @@
 				A1B2C3D4E5F6000000000201 /* NutritionTrackerApp.swift */,
 				A1B2C3D4E5F6000000000202 /* ContentView.swift */,
 				A1B2C3D4E5F6000000000203 /* Models.swift */,
+				A1B2C3D4E5F6000000000212 /* NutrientCatalog.swift */,
 				A1B2C3D4E5F6000000000204 /* NutritionStore.swift */,
+				A1B2C3D4E5F6000000000213 /* FoundationFoodDatabase.swift */,
 				A1B2C3D4E5F6000000000205 /* DashboardView.swift */,
 				A1B2C3D4E5F6000000000206 /* AddFoodView.swift */,
 				A1B2C3D4E5F6000000000207 /* HistoryView.swift */,
@@ -138,6 +155,7 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				A1B2C3D4E5F6000000000113 /* FoodData_Central_foundation_food_json_2025-12-18.json in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -151,7 +169,9 @@
 				A1B2C3D4E5F6000000000101 /* NutritionTrackerApp.swift in Sources */,
 				A1B2C3D4E5F6000000000102 /* ContentView.swift in Sources */,
 				A1B2C3D4E5F6000000000103 /* Models.swift in Sources */,
+				A1B2C3D4E5F6000000000111 /* NutrientCatalog.swift in Sources */,
 				A1B2C3D4E5F6000000000104 /* NutritionStore.swift in Sources */,
+				A1B2C3D4E5F6000000000112 /* FoundationFoodDatabase.swift in Sources */,
 				A1B2C3D4E5F6000000000105 /* DashboardView.swift in Sources */,
 				A1B2C3D4E5F6000000000106 /* AddFoodView.swift in Sources */,
 				A1B2C3D4E5F6000000000107 /* HistoryView.swift in Sources */,
