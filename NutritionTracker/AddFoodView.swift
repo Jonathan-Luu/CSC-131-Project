@@ -17,8 +17,16 @@ struct AddFoodView: View {
     @State private var searchText = ""
     @State private var browseGroup: FoodBrowseGroup = .all
     @State private var meatSubfilter: FoodMeatSubfilter = .all
+    /// USDA flow: pick a category row first, then (if meat) pick a meat type, then see foods.
+    @State private var usdaPhase: USDABrowsePhase = .pickCategory
     @State private var selectedItem: FoundationFoodItem?
     @State private var portionGrams = "100"
+
+    private enum USDABrowsePhase: Equatable {
+        case pickCategory
+        case pickMeatSubtype
+        case listFoods
+    }
 
     var body: some View {
         NavigationStack {
@@ -37,14 +45,102 @@ struct AddFoodView: View {
                     databaseSection
                 }
             }
-            .navigationTitle("Add Food")
+            .navigationTitle(mode == .usda ? usdaNavigationTitle : "Add Food")
+            .navigationBarTitleDisplayMode(mode == .usda ? .inline : .automatic)
+            .toolbar {
+                if mode == .usda, usdaPhase != .pickCategory {
+                    ToolbarItem(placement: .topBarLeading) {
+                        Button {
+                            goBackUSDABrowse()
+                        } label: {
+                            HStack(spacing: 4) {
+                                Image(systemName: "chevron.left")
+                                Text(usdaBackButtonTitle)
+                            }
+                        }
+                    }
+                }
+            }
             .onAppear {
                 ensureManualFields()
+            }
+            .onChange(of: mode) { _, newMode in
+                if newMode == .usda {
+                    resetUSDABrowseToCategories()
+                }
             }
             .sheet(item: $selectedItem) { item in
                 portionSheet(for: item)
             }
         }
+    }
+
+    private var usdaNavigationTitle: String {
+        guard mode == .usda else { return "Add Food" }
+        switch usdaPhase {
+        case .pickCategory:
+            return "Choose category"
+        case .pickMeatSubtype:
+            return FoodBrowseGroup.meatPoultry.rawValue
+        case .listFoods:
+            if browseGroup == .meatPoultry, meatSubfilter != .all {
+                return "\(browseGroup.rawValue) · \(meatSubfilter.rawValue)"
+            }
+            return browseGroup.rawValue
+        }
+    }
+
+    private var usdaBackButtonTitle: String {
+        switch usdaPhase {
+        case .listFoods:
+            return browseGroup == .meatPoultry ? "Meat types" : "Categories"
+        case .pickMeatSubtype:
+            return "Categories"
+        case .pickCategory:
+            return ""
+        }
+    }
+
+    private func goBackUSDABrowse() {
+        switch usdaPhase {
+        case .listFoods:
+            searchText = ""
+            if browseGroup == .meatPoultry {
+                usdaPhase = .pickMeatSubtype
+            } else {
+                usdaPhase = .pickCategory
+                browseGroup = .all
+                meatSubfilter = .all
+            }
+        case .pickMeatSubtype:
+            usdaPhase = .pickCategory
+            browseGroup = .all
+            meatSubfilter = .all
+        case .pickCategory:
+            break
+        }
+    }
+
+    private func resetUSDABrowseToCategories() {
+        usdaPhase = .pickCategory
+        browseGroup = .all
+        meatSubfilter = .all
+        searchText = ""
+    }
+
+    private func selectBrowseGroup(_ group: FoodBrowseGroup) {
+        browseGroup = group
+        if group == .meatPoultry {
+            meatSubfilter = .all
+            usdaPhase = .pickMeatSubtype
+        } else {
+            usdaPhase = .listFoods
+        }
+    }
+
+    private func selectMeatSubfilter(_ sub: FoodMeatSubfilter) {
+        meatSubfilter = sub
+        usdaPhase = .listFoods
     }
 
     private var manualForm: some View {
@@ -104,47 +200,112 @@ struct AddFoodView: View {
                     .padding()
             } else {
                 List {
-                    Section {
-                        Picker("Category", selection: $browseGroup) {
-                            ForEach(FoodBrowseGroup.allCases) { g in
-                                Text(g.rawValue).tag(g)
+                    switch usdaPhase {
+                    case .pickCategory:
+                        Section {
+                            Text("Choose a category to see foods. Meat & poultry has one more step to narrow by type.")
+                                .font(.caption)
+                                .foregroundStyle(.secondary)
+                        }
+                        ForEach(FoodBrowseGroup.allCases) { group in
+                            Button {
+                                selectBrowseGroup(group)
+                            } label: {
+                                usdaRow(
+                                    title: group.rawValue,
+                                    detail: usdaCategorySubtitle(for: group),
+                                    footnote: "Tap to browse"
+                                )
                             }
                         }
-                        if browseGroup == .meatPoultry {
-                            Picker("Type", selection: $meatSubfilter) {
-                                ForEach(FoodMeatSubfilter.allCases) { s in
-                                    Text(s.rawValue).tag(s)
-                                }
+                    case .pickMeatSubtype:
+                        Section {
+                            Text("Choose a meat type, or “All in group” for every meat & poultry item.")
+                                .font(.caption)
+                                .foregroundStyle(.secondary)
+                        }
+                        ForEach(FoodMeatSubfilter.allCases) { sub in
+                            Button {
+                                selectMeatSubfilter(sub)
+                            } label: {
+                                usdaRow(
+                                    title: sub.rawValue,
+                                    detail: sub == .all
+                                        ? "Includes chicken, beef, pork, and more"
+                                        : "Foods with “\(sub.rawValue.lowercased())” in the name",
+                                    footnote: "Tap to see foods"
+                                )
                             }
                         }
-                        TextField("Search foods", text: $searchText)
-                            .textInputAutocapitalization(.never)
-                            .autocorrectionDisabled()
-                        Text("Pick a broad category, then search by any word—order does not need to match the full name.")
-                            .font(.caption)
-                            .foregroundStyle(.secondary)
-                    }
-                    ForEach(foodDatabase.search(searchText, browse: browseGroup, meatSubfilter: meatSubfilter)) { item in
-                        Button {
-                            selectedItem = item
-                            portionGrams = "100"
-                        } label: {
-                            VStack(alignment: .leading, spacing: 4) {
-                                Text(item.description)
-                                    .foregroundStyle(.primary)
-                                if let cat = item.fdcCategoryDescription {
-                                    Text(cat)
-                                        .font(.caption)
-                                        .foregroundStyle(.tertiary)
-                                }
-                                Text("Tap to choose portion (per 100 g in database)")
-                                    .font(.caption)
-                                    .foregroundStyle(.secondary)
+                    case .listFoods:
+                        Section {
+                            TextField("Search in this category", text: $searchText)
+                                .textInputAutocapitalization(.never)
+                                .autocorrectionDisabled()
+                            Text("Search matches any word; order does not need to match the full name.")
+                                .font(.caption)
+                                .foregroundStyle(.secondary)
+                        }
+                        ForEach(foodDatabase.search(searchText, browse: browseGroup, meatSubfilter: meatSubfilter)) { item in
+                            Button {
+                                selectedItem = item
+                                portionGrams = "100"
+                            } label: {
+                                usdaRow(
+                                    title: item.description,
+                                    detail: item.fdcCategoryDescription,
+                                    footnote: "Tap to choose portion (per 100 g in database)",
+                                    detailIsTertiary: true
+                                )
                             }
                         }
                     }
                 }
             }
+        }
+    }
+
+    private func usdaCategorySubtitle(for group: FoodBrowseGroup) -> String {
+        switch group {
+        case .all:
+            return "Search across every foundation food"
+        case .meatPoultry:
+            return "Then pick chicken, beef, pork, and more"
+        case .dairyEggs:
+            return "Milk, cheese, yogurt, eggs…"
+        case .grainsBakery:
+            return "Bread, cereal, flour, pasta…"
+        case .vegetables:
+            return "Vegetables and vegetable products"
+        case .fruits:
+            return "Fruits and juices"
+        case .legumes:
+            return "Beans, lentils, hummus…"
+        case .seafood:
+            return "Fish and shellfish"
+        case .fatsOils:
+            return "Oils and solid fats"
+        case .snacksSweets:
+            return "Snacks, nuts, sweets"
+        case .other:
+            return "Everything else in the database"
+        }
+    }
+
+    /// Shared layout with food rows: title, optional detail line, footnote caption.
+    @ViewBuilder
+    private func usdaRow(title: String, detail: String?, footnote: String, detailIsTertiary: Bool = false) -> some View {
+        VStack(alignment: .leading, spacing: 4) {
+            Text(title)
+                .foregroundStyle(.primary)
+            if let detail, !detail.isEmpty {
+                Text(detail)
+                    .font(.caption)
+                    .foregroundStyle(detailIsTertiary ? .tertiary : .secondary)
+            }
+            Text(footnote)
+                .font(.caption)
+                .foregroundStyle(.secondary)
         }
     }
 
