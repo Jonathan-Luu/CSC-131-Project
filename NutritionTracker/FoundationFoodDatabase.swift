@@ -11,9 +11,14 @@ private struct FoodDataCentralFile: Decodable {
     }
 }
 
+private struct FDCFoodCategory: Decodable {
+    let description: String?
+}
+
 private struct FDCFood: Decodable {
     let description: String
     let foodNutrients: [FDCFoodNutrient]
+    let foodCategory: FDCFoodCategory?
 }
 
 private struct FDCFoodNutrient: Decodable {
@@ -38,6 +43,8 @@ private struct FDCNutrient: Decodable {
 struct FoundationFoodItem: Identifiable, Hashable {
     let id: Int
     let description: String
+    /// FDC `foodCategory.description` when present (e.g. `"Poultry Products"`).
+    let fdcCategoryDescription: String?
     /// USDA nutrient id → amount per 100 g
     let nutrientsPer100g: [Int: Double]
 }
@@ -54,10 +61,55 @@ final class FoundationFoodDatabase: ObservableObject {
         Task { await load() }
     }
 
-    func search(_ query: String) -> [FoundationFoodItem] {
-        let q = query.trimmingCharacters(in: .whitespacesAndNewlines)
-        guard !q.isEmpty else { return items }
-        return items.filter { $0.description.localizedCaseInsensitiveContains(q) }
+    /// Local search: optional **browse** bucket (from FDC category), optional **meat** keyword filter, then tokenized text query with ranking.
+    func search(
+        _ query: String,
+        browse: FoodBrowseGroup = .all,
+        meatSubfilter: FoodMeatSubfilter = .all
+    ) -> [FoundationFoodItem] {
+        let trimmed = query.trimmingCharacters(in: .whitespacesAndNewlines)
+        var tokens = FoodSearchQuery.tokens(from: trimmed)
+        if tokens.isEmpty, !trimmed.isEmpty {
+            tokens = [trimmed.lowercased()]
+        }
+        let normalized = trimmed.lowercased()
+
+        var base = items
+        if browse != .all {
+            base = base.filter { FoodBrowseGroup.from(fdcCategoryDescription: $0.fdcCategoryDescription) == browse }
+        }
+        if browse == .meatPoultry, meatSubfilter != .all {
+            base = base.filter { meatSubfilter.matchesDescription($0.description) }
+        }
+
+        if trimmed.isEmpty {
+            return base.sorted { $0.description.localizedCaseInsensitiveCompare($1.description) == .orderedAscending }
+        }
+
+        let matched = base.filter {
+            FoodSearchQuery.matchesAllTokens(
+                description: $0.description,
+                fdcCategory: $0.fdcCategoryDescription,
+                tokens: tokens
+            )
+        }
+
+        return matched.sorted {
+            let s0 = FoodSearchQuery.relevanceScore(
+                description: $0.description,
+                fdcCategory: $0.fdcCategoryDescription,
+                normalizedQuery: normalized,
+                tokens: tokens
+            )
+            let s1 = FoodSearchQuery.relevanceScore(
+                description: $1.description,
+                fdcCategory: $1.fdcCategoryDescription,
+                normalizedQuery: normalized,
+                tokens: tokens
+            )
+            if s0 != s1 { return s0 > s1 }
+            return $0.description.localizedCaseInsensitiveCompare($1.description) == .orderedAscending
+        }
     }
 
     /// Scale per-100 g values to the given gram amount.
@@ -89,7 +141,12 @@ final class FoundationFoodDatabase: ObservableObject {
                     }
                 }
                 let canonical = NutrientNormalization.canonicalizeNutrients(dict)
-                return FoundationFoodItem(id: index, description: food.description, nutrientsPer100g: canonical)
+                return FoundationFoodItem(
+                    id: index,
+                    description: food.description,
+                    fdcCategoryDescription: food.foodCategory?.description,
+                    nutrientsPer100g: canonical
+                )
             }
             isLoading = false
         } catch {
