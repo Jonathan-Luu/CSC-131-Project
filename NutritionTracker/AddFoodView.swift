@@ -64,7 +64,7 @@ struct AddFoodView: View {
             .onAppear {
                 ensureManualFields()
             }
-            .onChange(of: mode) { _, newMode in
+            .onChange(of: mode) {newMode in
                 if newMode == .usda {
                     resetUSDABrowseToCategories()
                 }
