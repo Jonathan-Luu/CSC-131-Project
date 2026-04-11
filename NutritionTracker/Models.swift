@@ -17,7 +17,7 @@ struct FoodEntry: Identifiable, Codable {
     init(id: UUID = UUID(), name: String, nutrients: [Int: Double], date: Date = Date()) {
         self.id = id
         self.name = name
-        self.nutrients = nutrients
+        self.nutrients = NutrientNormalization.canonicalizeNutrients(nutrients)
         self.date = date
     }
 
@@ -32,16 +32,16 @@ struct FoodEntry: Identifiable, Codable {
         name = try c.decode(String.self, forKey: .name)
         date = try c.decode(Date.self, forKey: .date)
         if let n = try c.decodeIfPresent([Int: Double].self, forKey: .nutrients) {
-            nutrients = n
+            nutrients = NutrientNormalization.canonicalizeNutrients(n)
         } else {
             let calories = try c.decode(Double.self, forKey: .legacyCalories)
             let protein = try c.decode(Double.self, forKey: .legacyProtein)
             let cholesterol = try c.decode(Double.self, forKey: .legacyCholesterol)
-            nutrients = [
-                1008: calories,
+            nutrients = NutrientNormalization.canonicalizeNutrients([
+                NutrientNormalization.energyKcalId: calories,
                 1003: protein,
                 1253: cholesterol,
-            ]
+            ])
         }
     }
 

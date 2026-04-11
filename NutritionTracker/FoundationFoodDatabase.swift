@@ -19,6 +19,13 @@ private struct FDCFood: Decodable {
 private struct FDCFoodNutrient: Decodable {
     let nutrient: FDCNutrient
     let amount: Double?
+    /// Some FDC rows publish only `median` (e.g. lab aggregates) instead of `amount`.
+    let median: Double?
+
+    var resolvedAmount: Double? {
+        if let amount { return amount }
+        return median
+    }
 }
 
 private struct FDCNutrient: Decodable {
@@ -77,11 +84,12 @@ final class FoundationFoodDatabase: ObservableObject {
             items = decoded.foundationFoods.enumerated().map { index, food in
                 var dict: [Int: Double] = [:]
                 for fn in food.foodNutrients {
-                    if let amt = fn.amount {
+                    if let amt = fn.resolvedAmount {
                         dict[fn.nutrient.id] = amt
                     }
                 }
-                return FoundationFoodItem(id: index, description: food.description, nutrientsPer100g: dict)
+                let canonical = NutrientNormalization.canonicalizeNutrients(dict)
+                return FoundationFoodItem(id: index, description: food.description, nutrientsPer100g: canonical)
             }
             isLoading = false
         } catch {

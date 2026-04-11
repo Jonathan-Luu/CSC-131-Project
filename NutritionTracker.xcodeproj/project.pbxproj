@@ -20,6 +20,7 @@
 		A1B2C3D4E5F6000000000111 /* NutrientCatalog.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1B2C3D4E5F6000000000212 /* NutrientCatalog.swift */; };
 		A1B2C3D4E5F6000000000112 /* FoundationFoodDatabase.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1B2C3D4E5F6000000000213 /* FoundationFoodDatabase.swift */; };
 		A1B2C3D4E5F6000000000113 /* FoodData_Central_foundation_food_json_2025-12-18.json in Resources */ = {isa = PBXBuildFile; fileRef = A1B2C3D4E5F6000000000214 /* FoodData_Central_foundation_food_json_2025-12-18.json */; };
+		A1B2C3D4E5F6000000000114 /* NutrientNormalization.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1B2C3D4E5F6000000000215 /* NutrientNormalization.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -38,6 +39,7 @@
 		A1B2C3D4E5F6000000000212 /* NutrientCatalog.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NutrientCatalog.swift; sourceTree = "<group>"; };
 		A1B2C3D4E5F6000000000213 /* FoundationFoodDatabase.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FoundationFoodDatabase.swift; sourceTree = "<group>"; };
 		A1B2C3D4E5F6000000000214 /* FoodData_Central_foundation_food_json_2025-12-18.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = FoodData_Central_foundation_food_json_2025-12-18.json; sourceTree = "<group>"; };
+		A1B2C3D4E5F6000000000215 /* NutrientNormalization.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NutrientNormalization.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -83,6 +85,7 @@
 				A1B2C3D4E5F6000000000202 /* ContentView.swift */,
 				A1B2C3D4E5F6000000000203 /* Models.swift */,
 				A1B2C3D4E5F6000000000212 /* NutrientCatalog.swift */,
+				A1B2C3D4E5F6000000000215 /* NutrientNormalization.swift */,
 				A1B2C3D4E5F6000000000204 /* NutritionStore.swift */,
 				A1B2C3D4E5F6000000000213 /* FoundationFoodDatabase.swift */,
 				A1B2C3D4E5F6000000000205 /* DashboardView.swift */,
@@ -170,6 +173,7 @@
 				A1B2C3D4E5F6000000000102 /* ContentView.swift in Sources */,
 				A1B2C3D4E5F6000000000103 /* Models.swift in Sources */,
 				A1B2C3D4E5F6000000000111 /* NutrientCatalog.swift in Sources */,
+				A1B2C3D4E5F6000000000114 /* NutrientNormalization.swift in Sources */,
 				A1B2C3D4E5F6000000000104 /* NutritionStore.swift in Sources */,
 				A1B2C3D4E5F6000000000112 /* FoundationFoodDatabase.swift in Sources */,
 				A1B2C3D4E5F6000000000105 /* DashboardView.swift in Sources */,
