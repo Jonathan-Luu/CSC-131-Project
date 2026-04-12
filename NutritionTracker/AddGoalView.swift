@@ -30,7 +30,7 @@ struct AddGoalView: View {
     }
 
     private var nutrientSelectionSection: some View {
-        Section("Choose a nutrient") {
+        Section(header: Text("Choose a nutrient")) {
             if filteredAvailableDefinitions.isEmpty {
                 Text(emptyStateMessage)
                     .font(.footnote)
@@ -44,7 +44,11 @@ struct AddGoalView: View {
     }
 
     private var newGoalSection: some View {
-        Section("New Goal") {
+        Section(
+            header: Text("New Goal"),
+            footer: Text("Choose a nutrient, enter a target amount, then save to add it to Daily Goals.")
+                .font(.footnote)
+        ) {
             if let definition = selectedDefinition {
                 LabeledContent("Nutrient", value: definition.name)
                 LabeledContent("Unit", value: definition.unit)
@@ -61,9 +65,6 @@ struct AddGoalView: View {
                 saveGoal()
             }
             .disabled(selectedDefinition == nil)
-        } footer: {
-            Text("Choose a nutrient, enter a target amount, then save to add it to Daily Goals.")
-                .font(.footnote)
         }
     }
 
