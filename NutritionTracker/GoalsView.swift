@@ -3,37 +3,31 @@ import SwiftUI
 struct GoalsView: View {
     @EnvironmentObject private var store: NutritionStore
 
-    /// Nutrient IDs the user is actively tracking (shown in “Your goals”).
+    /// Nutrient IDs the user is actively tracking (shown in "Daily Goal").
     @State private var trackedIds: Set<Int> = []
     @State private var draft: [Int: String] = [:]
     @State private var showValidation = false
-
-    /// Which category disclosure groups are expanded under “Your goals”.
-    @State private var expandedYourCategories: Set<NutrientCategory> = []
-    /// Which category disclosure groups are expanded under “Add a goal”.
-    @State private var expandedAddCategories: Set<NutrientCategory> = []
+    @State private var selectedCategory: NutrientCategory = NutrientCategory.allCases.first ?? .macros
+    @State private var selectedNutrientId: Int?
 
     var body: some View {
         NavigationStack {
             Form {
                 Section {
                     if trackedIds.isEmpty {
-                        Text("You have not set any goals yet. Expand a category under “Add a goal” and choose a nutrient.")
+                        Text("You have not set any daily goals yet. Choose a category and nutrient below to add one.")
                             .font(.footnote)
                             .foregroundStyle(.secondary)
                     } else {
                         ForEach(NutrientCategory.allCases, id: \.self) { category in
                             let active = activeDefinitions(in: category)
                             if !active.isEmpty {
-                                DisclosureGroup(
-                                    isExpanded: isExpandedYour(category)
-                                ) {
-                                    ForEach(active) { def in
-                                        goalRow(def: def)
-                                    }
-                                } label: {
-                                    Text(category.rawValue)
-                                        .font(.headline)
+                                Text(category.rawValue)
+                                    .font(.headline)
+                                    .padding(.top, 4)
+
+                                ForEach(active) { def in
+                                    goalRow(def: def)
                                 }
                             }
                         }
@@ -43,45 +37,47 @@ struct GoalsView: View {
                         saveGoal()
                     }
                 } header: {
-                    Text("Your goals")
+                    Text("Daily Goal")
                 }
 
                 Section {
-                    ForEach(NutrientCategory.allCases, id: \.self) { category in
-                        let available = availableDefinitions(in: category)
-                        if !available.isEmpty {
-                            DisclosureGroup(
-                                isExpanded: isExpandedAdd(category)
-                            ) {
-                                ForEach(available) { def in
-                                    Button {
-                                        addGoal(def)
-                                    } label: {
-                                        HStack {
-                                            Text(def.name)
-                                            Spacer()
-                                            Text("Add")
-                                                .font(.subheadline)
-                                                .foregroundStyle(.secondary)
-                                        }
-                                    }
-                                }
-                            } label: {
-                                Text(category.rawValue)
-                                    .font(.headline)
+                    if availableDefinitions.isEmpty {
+                        Text("All supported nutrients already have goals. Remove one to choose a different nutrient.")
+                            .font(.footnote)
+                            .foregroundStyle(.secondary)
+                    } else {
+                        Picker("Category", selection: $selectedCategory) {
+                            ForEach(categoriesWithAvailableGoals, id: \.self) { category in
+                                Text(category.rawValue).tag(category)
                             }
                         }
+
+                        Picker("Nutrient", selection: selectedNutrientBinding) {
+                            Text("Select a nutrient").tag(Int?.none)
+                            ForEach(availableDefinitions(in: selectedCategory)) { def in
+                                Text(def.name).tag(Optional(def.id))
+                            }
+                        }
+
+                        Button("Add Goal") {
+                            guard
+                                let nutrientId = selectedNutrientId,
+                                let definition = NutrientCatalog.definition(for: nutrientId)
+                            else { return }
+                            addGoal(definition)
+                        }
+                        .disabled(selectedNutrientId == nil)
                     }
                 } header: {
                     Text("Add a goal")
                 } footer: {
-                    Text("Choosing a nutrient adds it with a suggested value you can edit. Remove a goal with the button beside its field.")
+                    Text("Choose a nutrient category, then select a nutrient to add with a suggested value you can edit. Remove a goal with the button beside its field.")
                         .font(.footnote)
                 }
 
                 if showValidation {
                     Section {
-                        Text("Enter a valid non‑negative number for each goal, or remove the goal.")
+                        Text("Enter a valid non-negative number for each goal, or remove the goal.")
                             .foregroundStyle(.red)
                             .font(.footnote)
                     }
@@ -100,36 +96,30 @@ struct GoalsView: View {
             .navigationTitle("Goals")
             .onAppear {
                 syncFromStore()
+                syncSelectionState()
             }
             .onChange(of: store.goal.targets) { _ in
                 syncFromStore()
+                syncSelectionState()
+            }
+            .onChange(of: selectedCategory) { _ in
+                updateSelectedNutrientForCurrentCategory()
             }
         }
     }
 
-    private func isExpandedYour(_ category: NutrientCategory) -> Binding<Bool> {
-        Binding(
-            get: { expandedYourCategories.contains(category) },
-            set: { isOn in
-                if isOn {
-                    expandedYourCategories.insert(category)
-                } else {
-                    expandedYourCategories.remove(category)
-                }
-            }
-        )
+    private var availableDefinitions: [NutrientCatalog.Definition] {
+        NutrientCatalog.tracked.filter { !trackedIds.contains($0.id) }
     }
 
-    private func isExpandedAdd(_ category: NutrientCategory) -> Binding<Bool> {
+    private var categoriesWithAvailableGoals: [NutrientCategory] {
+        NutrientCategory.allCases.filter { !availableDefinitions(in: $0).isEmpty }
+    }
+
+    private var selectedNutrientBinding: Binding<Int?> {
         Binding(
-            get: { expandedAddCategories.contains(category) },
-            set: { isOn in
-                if isOn {
-                    expandedAddCategories.insert(category)
-                } else {
-                    expandedAddCategories.remove(category)
-                }
-            }
+            get: { selectedNutrientId },
+            set: { selectedNutrientId = $0 }
         )
     }
 
@@ -175,20 +165,16 @@ struct GoalsView: View {
         if draft[def.id] == nil || draft[def.id]?.isEmpty == true {
             draft[def.id] = formatGoal(def.defaultGoal)
         }
-        expandedYourCategories.insert(def.category)
         showValidation = false
+        syncSelectionState()
     }
 
     private func removeGoal(_ id: Int) {
         trackedIds.remove(id)
         draft.removeValue(forKey: id)
-        if let cat = NutrientCatalog.definition(for: id)?.category {
-            if activeDefinitions(in: cat).isEmpty {
-                expandedYourCategories.remove(cat)
-            }
-        }
         showValidation = false
         persistRemovalOfGoal(id: id)
+        syncSelectionState()
     }
 
     /// Writes zero for the removed id so streak logic updates immediately.
@@ -202,18 +188,40 @@ struct GoalsView: View {
     }
 
     private func syncFromStore() {
-        let fromStore = Set(store.goal.targets.filter { $0.value > 0 }.map(\.key))
-        trackedIds = fromStore.union(trackedIds)
+        trackedIds = Set(store.goal.targets.filter { $0.value > 0 }.map(\.key))
+        draft = draft.filter { trackedIds.contains($0.key) }
         for id in trackedIds {
-            if let g = store.goal.targets[id], g > 0 {
-                draft[id] = formatGoal(g)
+            if let goal = store.goal.targets[id], goal > 0 {
+                draft[id] = formatGoal(goal)
             }
         }
     }
 
-    private func formatGoal(_ g: Double) -> String {
-        if g.rounded() == g { return String(format: "%.0f", g) }
-        return String(format: "%.2f", g)
+    private func syncSelectionState() {
+        let availableCategories = categoriesWithAvailableGoals
+        guard !availableCategories.isEmpty else {
+            selectedNutrientId = nil
+            return
+        }
+
+        if !availableCategories.contains(selectedCategory) {
+            selectedCategory = availableCategories[0]
+        }
+
+        updateSelectedNutrientForCurrentCategory()
+    }
+
+    private func updateSelectedNutrientForCurrentCategory() {
+        let availableForCategory = availableDefinitions(in: selectedCategory)
+        if availableForCategory.contains(where: { $0.id == selectedNutrientId }) {
+            return
+        }
+        selectedNutrientId = availableForCategory.first?.id
+    }
+
+    private func formatGoal(_ goal: Double) -> String {
+        if goal.rounded() == goal { return String(format: "%.0f", goal) }
+        return String(format: "%.2f", goal)
     }
 
     private func saveGoal() {
@@ -223,11 +231,11 @@ struct GoalsView: View {
         }
         for id in trackedIds {
             let raw = draft[id]?.trimmingCharacters(in: .whitespacesAndNewlines) ?? ""
-            guard !raw.isEmpty, let v = Double(raw), v >= 0 else {
+            guard !raw.isEmpty, let value = Double(raw), value >= 0 else {
                 showValidation = true
                 return
             }
-            targets[id] = v
+            targets[id] = value
         }
         store.updateGoal(targets: targets)
         showValidation = false
