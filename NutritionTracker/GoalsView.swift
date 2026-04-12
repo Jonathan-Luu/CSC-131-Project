@@ -19,17 +19,10 @@ struct GoalsView: View {
                             goalRow(def: def)
                         }
                     }
-
-                    Button("Save Goals") {
-                        saveGoals()
-                    }
-                    .disabled(activeDefinitions.isEmpty)
+                    
                 } header: {
                     Text("Daily Goals")
-                } footer: {
-                    Text("Edit any saved goal and tap Save Goals to update it.")
-                        .font(.footnote)
-                }
+                } 
 
                 Section {
                     NavigationLink {
@@ -119,22 +112,6 @@ struct GoalsView: View {
         targets[id] = 0
         store.updateGoal(targets: targets)
         draft.removeValue(forKey: id)
-        showValidation = false
-    }
-
-    private func saveGoals() {
-        var targets = store.goal.targets
-
-        for def in activeDefinitions {
-            let raw = draft[def.id]?.trimmingCharacters(in: .whitespacesAndNewlines) ?? ""
-            guard let value = Double(raw), value > 0 else {
-                showValidation = true
-                return
-            }
-            targets[def.id] = value
-        }
-
-        store.updateGoal(targets: targets)
         showValidation = false
     }
 
