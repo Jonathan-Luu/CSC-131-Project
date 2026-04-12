@@ -14,7 +14,6 @@ struct AddGoalView: View {
     var body: some View {
         Form {
             nutrientSelectionSection
-            newGoalSection
 
             if showValidation {
                 validationSection
@@ -38,7 +37,7 @@ struct AddGoalView: View {
             }
         } message: {
             if let definition = selectedDefinition {
-                Text("Enter a target amount for \(definition.name).")
+                Text("Enter a target amount for \(definition.name) (\(definition.unit))")
             } else {
                 Text("Enter a target amount for this nutrient.")
             }
@@ -55,23 +54,6 @@ struct AddGoalView: View {
                 ForEach(NutrientCategory.allCases, id: \.self) { category in
                     categoryDisclosureGroup(for: category)
                 }
-            }
-        }
-    }
-
-    private var newGoalSection: some View {
-        Section(
-            header: Text("New Goal"),
-            footer: Text("Choose a nutrient above to open a quick goal-entry popup.")
-                .font(.footnote)
-        ) {
-            if let definition = selectedDefinition {
-                LabeledContent("Selected", value: definition.name)
-                LabeledContent("Unit", value: definition.unit)
-            } else {
-                Text("Select a nutrient above to set a daily goal.")
-                    .font(.footnote)
-                    .foregroundStyle(.secondary)
             }
         }
     }
@@ -107,18 +89,8 @@ struct AddGoalView: View {
         } label: {
             HStack {
                 VStack(alignment: .leading, spacing: 2) {
-                    Text(def.name)
+                    Text("\(def.name) (\(def.unit))")
                         .foregroundStyle(.primary)
-                    Text(def.unit)
-                        .font(.caption2)
-                        .foregroundStyle(.secondary)
-                }
-
-                Spacer()
-
-                if selectedNutrientId == def.id {
-                    Image(systemName: "checkmark.circle.fill")
-                        .foregroundStyle(.tint)
                 }
             }
             .frame(maxWidth: .infinity, alignment: .leading)

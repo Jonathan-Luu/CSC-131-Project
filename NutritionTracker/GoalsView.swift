@@ -41,14 +41,11 @@ struct GoalsView: View {
                     }
                 }
 
-                Section("Current streak rule") {
+                Section("Consistency") {
+                    Text("You have met your goals on \(store.consistencyPercent, specifier: "%.1f")% of logged days.")
                     Text("A day counts when every active goal is met: minimums reached (or maximums not exceeded for cholesterol, sodium, and total fat).")
                         .font(.footnote)
                         .foregroundStyle(.secondary)
-                }
-
-                Section("Consistency") {
-                    Text("You have met your goals on \(store.consistencyPercent, specifier: "%.1f")% of logged days.")
                 }
             }
             .navigationTitle("Goals")
