@@ -57,9 +57,9 @@ struct AddGoalView: View {
             }
 
             Section("New Goal") {
-                if let selectedDefinition {
-                    LabeledContent("Nutrient", value: selectedDefinition.name)
-                    LabeledContent("Unit", value: selectedDefinition.unit)
+                if let definition = selectedDefinition {
+                    LabeledContent("Nutrient", value: definition.name)
+                    LabeledContent("Unit", value: definition.unit)
 
                     TextField("Target amount", text: $targetText)
                         .keyboardType(.decimalPad)
@@ -97,7 +97,7 @@ struct AddGoalView: View {
     }
 
     private var selectedDefinition: NutrientCatalog.Definition? {
-        guard let selectedNutrientId else { return nil }
+        guard let selectedNutrientId = selectedNutrientId else { return nil }
         return filteredAvailableDefinitions.first(where: { $0.id == selectedNutrientId })
             ?? availableDefinitions.first(where: { $0.id == selectedNutrientId })
     }
