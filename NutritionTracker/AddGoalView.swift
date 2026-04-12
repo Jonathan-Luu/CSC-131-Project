@@ -5,10 +5,11 @@ struct AddGoalView: View {
     @EnvironmentObject private var store: NutritionStore
 
     @State private var searchText = ""
-    @State private var expandedCategories = Set(NutrientCategory.allCases)
+    @State private var expandedCategories: Set<NutrientCategory> = []
     @State private var selectedNutrientId: Int?
     @State private var targetText = ""
     @State private var showValidation = false
+    @State private var showingGoalPrompt = false
 
     var body: some View {
         Form {
@@ -21,11 +22,26 @@ struct AddGoalView: View {
         }
         .navigationTitle("Add Goal")
         .searchable(text: $searchText, prompt: "Search nutrients")
-        .onAppear {
-            expandRelevantCategories()
-        }
         .onChange(of: searchText) { _ in
             expandRelevantCategories()
+        }
+        .alert("Set Daily Goal", isPresented: $showingGoalPrompt) {
+            TextField("Target amount", text: $targetText)
+                .keyboardType(.decimalPad)
+
+            Button("Cancel", role: .cancel) {
+                showValidation = false
+            }
+
+            Button("Save") {
+                saveGoal()
+            }
+        } message: {
+            if let definition = selectedDefinition {
+                Text("Enter a target amount for \(definition.name).")
+            } else {
+                Text("Enter a target amount for this nutrient.")
+            }
         }
     }
 
@@ -46,25 +62,17 @@ struct AddGoalView: View {
     private var newGoalSection: some View {
         Section(
             header: Text("New Goal"),
-            footer: Text("Choose a nutrient, enter a target amount, then save to add it to Daily Goals.")
+            footer: Text("Choose a nutrient above to open a quick goal-entry popup.")
                 .font(.footnote)
         ) {
             if let definition = selectedDefinition {
-                LabeledContent("Nutrient", value: definition.name)
+                LabeledContent("Selected", value: definition.name)
                 LabeledContent("Unit", value: definition.unit)
-
-                TextField("Target amount", text: $targetText)
-                    .keyboardType(.decimalPad)
             } else {
                 Text("Select a nutrient above to set a daily goal.")
                     .font(.footnote)
                     .foregroundStyle(.secondary)
             }
-
-            Button("Save") {
-                saveGoal()
-            }
-            .disabled(selectedDefinition == nil)
         }
     }
 
@@ -113,6 +121,8 @@ struct AddGoalView: View {
                         .foregroundStyle(.tint)
                 }
             }
+            .frame(maxWidth: .infinity, alignment: .leading)
+            .contentShape(Rectangle())
         }
         .buttonStyle(.plain)
     }
@@ -171,6 +181,7 @@ struct AddGoalView: View {
         selectedNutrientId = def.id
         targetText = formatGoal(def.defaultGoal)
         showValidation = false
+        showingGoalPrompt = true
     }
 
     private func saveGoal() {
@@ -186,6 +197,7 @@ struct AddGoalView: View {
         var targets = store.goal.targets
         targets[definition.id] = target
         store.updateGoal(targets: targets)
+        showingGoalPrompt = false
         dismiss()
     }
 
@@ -194,7 +206,7 @@ struct AddGoalView: View {
         if matchingCategories.isEmpty {
             expandedCategories = []
         } else if searchText.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
-            expandedCategories = Set(NutrientCategory.allCases)
+            expandedCategories = []
         } else {
             expandedCategories = matchingCategories
         }
