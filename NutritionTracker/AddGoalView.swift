@@ -12,78 +12,11 @@ struct AddGoalView: View {
 
     var body: some View {
         Form {
-            Section("Choose a nutrient") {
-                if filteredAvailableDefinitions.isEmpty {
-                    Text(emptyStateMessage)
-                        .font(.footnote)
-                        .foregroundStyle(.secondary)
-                } else {
-                    ForEach(NutrientCategory.allCases, id: \.self) { category in
-                        let defs = filteredDefinitions(in: category)
-                        if !defs.isEmpty {
-                            DisclosureGroup(
-                                isExpanded: expansionBinding(for: category)
-                            ) {
-                                ForEach(defs) { def in
-                                    Button {
-                                        select(def)
-                                    } label: {
-                                        HStack {
-                                            VStack(alignment: .leading, spacing: 2) {
-                                                Text(def.name)
-                                                    .foregroundStyle(.primary)
-                                                Text(def.unit)
-                                                    .font(.caption2)
-                                                    .foregroundStyle(.secondary)
-                                            }
-
-                                            Spacer()
-
-                                            if selectedNutrientId == def.id {
-                                                Image(systemName: "checkmark.circle.fill")
-                                                    .foregroundStyle(.tint)
-                                            }
-                                        }
-                                    }
-                                    .buttonStyle(.plain)
-                                }
-                            } label: {
-                                Text(category.rawValue)
-                                    .font(.headline)
-                            }
-                        }
-                    }
-                }
-            }
-
-            Section("New Goal") {
-                if let definition = selectedDefinition {
-                    LabeledContent("Nutrient", value: definition.name)
-                    LabeledContent("Unit", value: definition.unit)
-
-                    TextField("Target amount", text: $targetText)
-                        .keyboardType(.decimalPad)
-                } else {
-                    Text("Select a nutrient above to set a daily goal.")
-                        .font(.footnote)
-                        .foregroundStyle(.secondary)
-                }
-
-                Button("Save") {
-                    saveGoal()
-                }
-                .disabled(selectedDefinition == nil)
-            } footer: {
-                Text("Choose a nutrient, enter a target amount, then save to add it to Daily Goals.")
-                    .font(.footnote)
-            }
+            nutrientSelectionSection
+            newGoalSection
 
             if showValidation {
-                Section {
-                    Text("Enter a valid target amount greater than zero.")
-                        .foregroundStyle(.red)
-                        .font(.footnote)
-                }
+                validationSection
             }
         }
         .navigationTitle("Add Goal")
@@ -94,6 +27,93 @@ struct AddGoalView: View {
         .onChange(of: searchText) { _ in
             expandRelevantCategories()
         }
+    }
+
+    private var nutrientSelectionSection: some View {
+        Section("Choose a nutrient") {
+            if filteredAvailableDefinitions.isEmpty {
+                Text(emptyStateMessage)
+                    .font(.footnote)
+                    .foregroundStyle(.secondary)
+            } else {
+                ForEach(NutrientCategory.allCases, id: \.self) { category in
+                    categoryDisclosureGroup(for: category)
+                }
+            }
+        }
+    }
+
+    private var newGoalSection: some View {
+        Section("New Goal") {
+            if let definition = selectedDefinition {
+                LabeledContent("Nutrient", value: definition.name)
+                LabeledContent("Unit", value: definition.unit)
+
+                TextField("Target amount", text: $targetText)
+                    .keyboardType(.decimalPad)
+            } else {
+                Text("Select a nutrient above to set a daily goal.")
+                    .font(.footnote)
+                    .foregroundStyle(.secondary)
+            }
+
+            Button("Save") {
+                saveGoal()
+            }
+            .disabled(selectedDefinition == nil)
+        } footer: {
+            Text("Choose a nutrient, enter a target amount, then save to add it to Daily Goals.")
+                .font(.footnote)
+        }
+    }
+
+    private var validationSection: some View {
+        Section {
+            Text("Enter a valid target amount greater than zero.")
+                .foregroundStyle(.red)
+                .font(.footnote)
+        }
+    }
+
+    @ViewBuilder
+    private func categoryDisclosureGroup(for category: NutrientCategory) -> some View {
+        let defs = filteredDefinitions(in: category)
+        if !defs.isEmpty {
+            DisclosureGroup(
+                isExpanded: expansionBinding(for: category)
+            ) {
+                ForEach(defs) { def in
+                    nutrientRow(for: def)
+                }
+            } label: {
+                Text(category.rawValue)
+                    .font(.headline)
+            }
+        }
+    }
+
+    private func nutrientRow(for def: NutrientCatalog.Definition) -> some View {
+        Button {
+            select(def)
+        } label: {
+            HStack {
+                VStack(alignment: .leading, spacing: 2) {
+                    Text(def.name)
+                        .foregroundStyle(.primary)
+                    Text(def.unit)
+                        .font(.caption2)
+                        .foregroundStyle(.secondary)
+                }
+
+                Spacer()
+
+                if selectedNutrientId == def.id {
+                    Image(systemName: "checkmark.circle.fill")
+                        .foregroundStyle(.tint)
+                }
+            }
+        }
+        .buttonStyle(.plain)
     }
 
     private var selectedDefinition: NutrientCatalog.Definition? {
