@@ -23,6 +23,7 @@
 		A1B2C3D4E5F6000000000114 /* NutrientNormalization.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1B2C3D4E5F6000000000215 /* NutrientNormalization.swift */; };
 		A1B2C3D4E5F6000000000115 /* FoodBrowseCategories.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1B2C3D4E5F6000000000216 /* FoodBrowseCategories.swift */; };
 		A1B2C3D4E5F6000000000116 /* FoodEntryDetailView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1B2C3D4E5F6000000000217 /* FoodEntryDetailView.swift */; };
+		A1B2C3D4E5F6000000000117 /* AddGoalView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1B2C3D4E5F6000000000218 /* AddGoalView.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -44,6 +45,7 @@
 		A1B2C3D4E5F6000000000215 /* NutrientNormalization.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NutrientNormalization.swift; sourceTree = "<group>"; };
 		A1B2C3D4E5F6000000000216 /* FoodBrowseCategories.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FoodBrowseCategories.swift; sourceTree = "<group>"; };
 		A1B2C3D4E5F6000000000217 /* FoodEntryDetailView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FoodEntryDetailView.swift; sourceTree = "<group>"; };
+		A1B2C3D4E5F6000000000218 /* AddGoalView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AddGoalView.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -95,6 +97,7 @@
 				A1B2C3D4E5F6000000000216 /* FoodBrowseCategories.swift */,
 				A1B2C3D4E5F6000000000205 /* DashboardView.swift */,
 				A1B2C3D4E5F6000000000206 /* AddFoodView.swift */,
+				A1B2C3D4E5F6000000000218 /* AddGoalView.swift */,
 				A1B2C3D4E5F6000000000207 /* HistoryView.swift */,
 				A1B2C3D4E5F6000000000217 /* FoodEntryDetailView.swift */,
 				A1B2C3D4E5F6000000000208 /* GoalsView.swift */,
@@ -185,6 +188,7 @@
 				A1B2C3D4E5F6000000000115 /* FoodBrowseCategories.swift in Sources */,
 				A1B2C3D4E5F6000000000105 /* DashboardView.swift in Sources */,
 				A1B2C3D4E5F6000000000106 /* AddFoodView.swift in Sources */,
+				A1B2C3D4E5F6000000000117 /* AddGoalView.swift in Sources */,
 				A1B2C3D4E5F6000000000107 /* HistoryView.swift in Sources */,
 				A1B2C3D4E5F6000000000116 /* FoodEntryDetailView.swift in Sources */,
 				A1B2C3D4E5F6000000000108 /* GoalsView.swift in Sources */,
