@@ -2,6 +2,7 @@ import SwiftUI
 
 struct HistoryView: View {
     @EnvironmentObject private var store: NutritionStore
+    @State private var detailEntry: FoodEntry?
 
     var body: some View {
         NavigationStack {
@@ -11,17 +12,24 @@ struct HistoryView: View {
                         .foregroundStyle(.secondary)
                 } else {
                     ForEach(store.entries) { entry in
-                        VStack(alignment: .leading, spacing: 6) {
-                            Text(entry.name)
-                                .font(.headline)
-                            Text(summaryLine(for: entry))
-                                .font(.subheadline)
-                                .foregroundStyle(.secondary)
-                            Text(entry.date.formatted(date: .abbreviated, time: .shortened))
-                                .font(.caption)
-                                .foregroundStyle(.secondary)
+                        Button {
+                            detailEntry = entry
+                        } label: {
+                            VStack(alignment: .leading, spacing: 6) {
+                                Text(entry.name)
+                                    .font(.headline)
+                                Text(summaryLine(for: entry))
+                                    .font(.subheadline)
+                                    .foregroundStyle(.secondary)
+                                Text(entry.date.formatted(date: .abbreviated, time: .shortened))
+                                    .font(.caption)
+                                    .foregroundStyle(.secondary)
+                            }
+                            .padding(.vertical, 2)
+                            .frame(maxWidth: .infinity, alignment: .leading)
+                            .contentShape(Rectangle())
                         }
-                        .padding(.vertical, 2)
+                        .buttonStyle(.plain)
                     }
                     .onDelete(perform: store.deleteEntries)
                 }
@@ -29,6 +37,9 @@ struct HistoryView: View {
             .navigationTitle("Food History")
             .toolbar {
                 EditButton()
+            }
+            .sheet(item: $detailEntry) { entry in
+                FoodEntryDetailView(entry: entry)
             }
         }
     }
