@@ -80,12 +80,6 @@ struct DashboardView: View {
             HStack {
                 Text(def.name)
                 Spacer()
-                if def.goalIsMaximum {
-                    Text("Daily Limit")
-                        .font(.subheadline)
-                        .foregroundStyle(.secondary)
-                }
-                
                 if goal > 0 {
                     Text("\(format(value)) / \(format(goal)) \(def.unit)")
                         .font(.subheadline)
