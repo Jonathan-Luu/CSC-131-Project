@@ -2,9 +2,9 @@ import Foundation
 
 enum NutrientCategory: String, CaseIterable {
     case macros = "Energy & Macros"
-    case fiber = "Fiber"
     case vitamins = "Vitamins"
     case minerals = "Minerals"
+    case misc = "Misc"
 }
 
 /// USDA FoodData Central nutrient IDs used for tracking (amounts per serving as stored on `FoodEntry`).
@@ -27,10 +27,6 @@ struct NutrientCatalog {
         Definition(id: 1003, name: "Protein", unit: "g", category: .macros, defaultGoal: 120, goalIsMaximum: false),
         Definition(id: 1005, name: "Carbohydrate", unit: "g", category: .macros, defaultGoal: 275, goalIsMaximum: false),
         Definition(id: 1004, name: "Total fat", unit: "g", category: .macros, defaultGoal: 78, goalIsMaximum: true),
-        Definition(id: 1253, name: "Cholesterol", unit: "mg", category: .macros, defaultGoal: 300, goalIsMaximum: true),
-        Definition(id: 1093, name: "Sodium", unit: "mg", category: .macros, defaultGoal: 2300, goalIsMaximum: true),
-        // Fiber
-        Definition(id: 1079, name: "Fiber, total dietary", unit: "g", category: .fiber, defaultGoal: 28, goalIsMaximum: false),
         // Vitamins
         Definition(id: 1106, name: "Vitamin A (RAE)", unit: "µg", category: .vitamins, defaultGoal: 900, goalIsMaximum: false),
         Definition(id: 1162, name: "Vitamin C", unit: "mg", category: .vitamins, defaultGoal: 90, goalIsMaximum: false),
@@ -47,6 +43,7 @@ struct NutrientCatalog {
         Definition(id: 1177, name: "Folate, total", unit: "µg", category: .vitamins, defaultGoal: 400, goalIsMaximum: false),
         Definition(id: 1180, name: "Choline, total", unit: "mg", category: .vitamins, defaultGoal: 550, goalIsMaximum: false),
         // Minerals
+        Definition(id: 1093, name: "Sodium", unit: "mg", category: .minerals, defaultGoal: 2300, goalIsMaximum: true),
         Definition(id: 1087, name: "Calcium", unit: "mg", category: .minerals, defaultGoal: 1300, goalIsMaximum: false),
         Definition(id: 1089, name: "Iron", unit: "mg", category: .minerals, defaultGoal: 18, goalIsMaximum: false),
         Definition(id: 1090, name: "Magnesium", unit: "mg", category: .minerals, defaultGoal: 420, goalIsMaximum: false),
@@ -56,6 +53,9 @@ struct NutrientCatalog {
         Definition(id: 1098, name: "Copper", unit: "mg", category: .minerals, defaultGoal: 0.9, goalIsMaximum: false),
         Definition(id: 1101, name: "Manganese", unit: "mg", category: .minerals, defaultGoal: 2.3, goalIsMaximum: false),
         Definition(id: 1103, name: "Selenium", unit: "µg", category: .minerals, defaultGoal: 55, goalIsMaximum: false),
+        // Misc
+        Definition(id: 1253, name: "Cholesterol", unit: "mg", category: .misc, defaultGoal: 300, goalIsMaximum: true),
+        Definition(id: 1079, name: "Fiber, total dietary", unit: "g", category: .misc, defaultGoal: 28, goalIsMaximum: false),
     ]
 
     static func definition(for id: Int) -> Definition? {
