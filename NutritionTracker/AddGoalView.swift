@@ -24,8 +24,23 @@ struct AddGoalView: View {
         .onChange(of: searchText) { _ in
             expandRelevantCategories()
         }
-        .sheet(isPresented: $showingGoalPrompt) {
-            goalPromptSheet
+        .alert("Set Daily Goal", isPresented: $showingGoalPrompt) {
+            TextField("Target amount", text: $targetText)
+                .keyboardType(.decimalPad)
+
+            Button("Cancel", role: .cancel) {
+                showValidation = false
+            }
+
+            Button("Save") {
+                saveGoal()
+            }
+        } message: {
+            if let definition = selectedDefinition {
+                Text("Enter a target amount for \(definition.name) (\(definition.unit))")
+            } else {
+                Text("Enter a target amount for this nutrient.")
+            }
         }
     }
 
@@ -48,44 +63,6 @@ struct AddGoalView: View {
             Text("Enter a valid target amount greater than zero.")
                 .foregroundStyle(.red)
                 .font(.footnote)
-        }
-    }
-
-    private var goalPromptSheet: some View {
-        NavigationStack {
-            Form {
-                Section {
-                    if let definition = selectedDefinition {
-                        Text("Set a goal for \(definition.name) (\(definition.unit))")
-                            .font(.footnote)
-                            .foregroundStyle(.secondary)
-                    }
-
-                    if showValidation {
-                        Text("Please enter a valid number")
-                            .foregroundStyle(.red)
-                            .font(.footnote)
-                    }
-
-                    TextField("Target amount", text: $targetText)
-                        .keyboardType(.decimalPad)
-                }
-            }
-            .navigationTitle("Set Daily Goal")
-            .toolbar {
-                ToolbarItem(placement: .cancellationAction) {
-                    Button("Cancel") {
-                        showValidation = false
-                        showingGoalPrompt = false
-                    }
-                }
-
-                ToolbarItem(placement: .confirmationAction) {
-                    Button("Save") {
-                        saveGoal()
-                    }
-                }
-            }
         }
     }
 
@@ -192,7 +169,6 @@ struct AddGoalView: View {
         var targets = store.goal.targets
         targets[definition.id] = target
         store.updateGoal(targets: targets)
-        showValidation = false
         showingGoalPrompt = false
         dismiss()
     }
