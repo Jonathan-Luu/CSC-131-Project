@@ -171,7 +171,7 @@ struct AddGoalView: View {
     private func alertMessage(for definition: NutrientCatalog.Definition) -> String {
         let prompt = "Enter a target amount for \(definition.name) (\(definition.unit))"
         guard let errorMessage else { return prompt }
-        return "\(errorMessage)\n\n\(prompt)"
+        return "\(prompt)\n\n\(errorMessage)"
     }
 
     private func expandRelevantCategories() {
