@@ -54,8 +54,8 @@ struct NutrientCatalog {
         Definition(id: 1101, name: "Manganese", unit: "mg", category: .minerals, defaultGoal: 2.3, goalIsMaximum: false),
         Definition(id: 1103, name: "Selenium", unit: "µg", category: .minerals, defaultGoal: 55, goalIsMaximum: false),
         // Misc
-        Definition(id: 1253, name: "Cholesterol", unit: "mg", category: .misc, defaultGoal: 300, goalIsMaximum: true),
         Definition(id: 1079, name: "Fiber, total dietary", unit: "g", category: .misc, defaultGoal: 28, goalIsMaximum: false),
+        Definition(id: 1253, name: "Cholesterol", unit: "mg", category: .misc, defaultGoal: 300, goalIsMaximum: true),
     ]
 
     static func definition(for id: Int) -> Definition? {
