@@ -8,17 +8,12 @@ struct AddGoalView: View {
     @State private var expandedCategories: Set<NutrientCategory> = []
     @State private var selectedNutrientId: Int?
     @State private var targetText = ""
-    @State private var showValidation = false
     @State private var errorMessage: String?
     @State private var showingGoalPrompt = false
 
     var body: some View {
         Form {
             nutrientSelectionSection
-
-            if showValidation {
-                validationSection
-            }
         }
         .navigationTitle("Add Goal")
         .searchable(text: $searchText, prompt: "Search nutrients")
@@ -33,7 +28,6 @@ struct AddGoalView: View {
                 .keyboardType(.decimalPad)
 
             Button("Cancel", role: .cancel) {
-                showValidation = false
                 errorMessage = nil
             }
 
@@ -60,14 +54,6 @@ struct AddGoalView: View {
                     categoryDisclosureGroup(for: category)
                 }
             }
-        }
-    }
-
-    private var validationSection: some View {
-        Section {
-            Text("Enter a valid target amount greater than zero.")
-                .foregroundStyle(.red)
-                .font(.footnote)
         }
     }
 
@@ -157,7 +143,6 @@ struct AddGoalView: View {
     private func select(_ def: NutrientCatalog.Definition) {
         selectedNutrientId = def.id
         targetText = formatGoal(def.defaultGoal)
-        showValidation = false
         errorMessage = nil
         showingGoalPrompt = true
     }
@@ -168,8 +153,10 @@ struct AddGoalView: View {
             let target = Double(targetText.trimmingCharacters(in: .whitespacesAndNewlines)),
             target > 0
         else {
-            showValidation = true
-            errorMessage = "Please enter a valid number."
+            errorMessage = "Enter a valid target amount greater than zero"
+            DispatchQueue.main.async {
+                showingGoalPrompt = true
+            }
             return
         }
 
