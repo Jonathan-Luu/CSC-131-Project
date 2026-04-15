@@ -54,7 +54,7 @@ struct DashboardView: View {
 
             if goal > 0 {
                 ProgressView(value: normalizedProgress(value: value, goal: goal, prefersLess: def.goalIsMaximum))
-                    .tint(def.goalIsMaximum && value > goal ? .red : .green)
+                    .tint(def.goalIsMaximum && value > goal ? .red : .gray)
             }
         }
     }
