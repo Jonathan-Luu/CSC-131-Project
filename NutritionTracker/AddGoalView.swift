@@ -9,6 +9,7 @@ struct AddGoalView: View {
     @State private var selectedNutrientId: Int?
     @State private var targetText = ""
     @State private var showValidation = false
+    @State private var errorMessage: String?
     @State private var showingGoalPrompt = false
 
     var body: some View {
@@ -24,12 +25,16 @@ struct AddGoalView: View {
         .onChange(of: searchText) { _ in
             expandRelevantCategories()
         }
+        .onChange(of: targetText) { _ in
+            errorMessage = nil
+        }
         .alert("Set Daily Goal", isPresented: $showingGoalPrompt) {
             TextField("Target amount", text: $targetText)
                 .keyboardType(.decimalPad)
 
             Button("Cancel", role: .cancel) {
                 showValidation = false
+                errorMessage = nil
             }
 
             Button("Save") {
@@ -37,7 +42,7 @@ struct AddGoalView: View {
             }
         } message: {
             if let definition = selectedDefinition {
-                Text("Enter a target amount for \(definition.name) (\(definition.unit))")
+                Text(alertMessage(for: definition))
             } else {
                 Text("Enter a target amount for this nutrient.")
             }
@@ -153,6 +158,7 @@ struct AddGoalView: View {
         selectedNutrientId = def.id
         targetText = formatGoal(def.defaultGoal)
         showValidation = false
+        errorMessage = nil
         showingGoalPrompt = true
     }
 
@@ -163,6 +169,7 @@ struct AddGoalView: View {
             target > 0
         else {
             showValidation = true
+            errorMessage = "Please enter a valid number."
             return
         }
 
@@ -170,7 +177,14 @@ struct AddGoalView: View {
         targets[definition.id] = target
         store.updateGoal(targets: targets)
         showingGoalPrompt = false
+        errorMessage = nil
         dismiss()
+    }
+
+    private func alertMessage(for definition: NutrientCatalog.Definition) -> String {
+        let prompt = "Enter a target amount for \(definition.name) (\(definition.unit))"
+        guard let errorMessage else { return prompt }
+        return "\(errorMessage)\n\n\(prompt)"
     }
 
     private func expandRelevantCategories() {
