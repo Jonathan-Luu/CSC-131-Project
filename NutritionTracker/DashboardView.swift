@@ -3,6 +3,7 @@ import SwiftUI
 struct DashboardView: View {
     @EnvironmentObject private var store: NutritionStore
     @State private var showAllNutrientsExpanded = false
+    @State private var expandedAdditionalCategories: Set<NutrientCategory> = []
 
     private var totals: [Int: Double] {
         store.todaysTotals
@@ -31,12 +32,15 @@ struct DashboardView: View {
                         ForEach(NutrientCategory.allCases, id: \.self) { category in
                             let defs = additionalDefinitions(in: category)
                             if !defs.isEmpty {
-                                Text(category.rawValue)
-                                    .font(.headline)
-                                    .padding(.top, 4)
-
-                                ForEach(defs) { def in
-                                    nutrientRow(def: def, value: totals[def.id] ?? 0)
+                                DisclosureGroup(
+                                    isExpanded: additionalCategoryBinding(for: category)
+                                ) {
+                                    ForEach(defs) { def in
+                                        nutrientRow(def: def, value: totals[def.id] ?? 0)
+                                    }
+                                } label: {
+                                    Text(category.rawValue)
+                                        .font(.headline)
                                 }
                             }
                         }
@@ -56,6 +60,11 @@ struct DashboardView: View {
                 }
             }
             .navigationTitle("Nutrition Tracker")
+            .onChange(of: showAllNutrientsExpanded) { isExpanded in
+                if !isExpanded {
+                    expandedAdditionalCategories.removeAll()
+                }
+            }
         }
     }
 
@@ -107,5 +116,18 @@ struct DashboardView: View {
         NutrientCatalog.tracked.filter {
             $0.category == category && !hasDailyGoal(for: $0.id)
         }
+    }
+
+    private func additionalCategoryBinding(for category: NutrientCategory) -> Binding<Bool> {
+        Binding(
+            get: { expandedAdditionalCategories.contains(category) },
+            set: { isExpanded in
+                if isExpanded {
+                    expandedAdditionalCategories.insert(category)
+                } else {
+                    expandedAdditionalCategories.remove(category)
+                }
+            }
+        )
     }
 }
