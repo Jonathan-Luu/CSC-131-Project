@@ -2,6 +2,7 @@ import SwiftUI
 
 struct DashboardView: View {
     @EnvironmentObject private var store: NutritionStore
+    @State private var showAllNutrients = false
 
     private var totals: [Int: Double] {
         store.todaysTotals
@@ -12,7 +13,7 @@ struct DashboardView: View {
             List {
                 ForEach(NutrientCategory.allCases, id: \.self) { category in
                     let defs = NutrientCatalog.tracked.filter {
-                        $0.category == category && hasDailyGoal(for: $0.id)
+                        $0.category == category && shouldShowNutrient($0.id)
                     }
                     if !defs.isEmpty {
                         Section(category.rawValue) {
@@ -21,6 +22,10 @@ struct DashboardView: View {
                             }
                         }
                     }
+                }
+
+                Section {
+                    Toggle("Show All Nutrients", isOn: $showAllNutrients)
                 }
 
                 Section("Goal Consistency") {
@@ -79,5 +84,9 @@ struct DashboardView: View {
 
     private func hasDailyGoal(for nutrientId: Int) -> Bool {
         (store.goal.targets[nutrientId] ?? 0) > 0
+    }
+
+    private func shouldShowNutrient(_ nutrientId: Int) -> Bool {
+        showAllNutrients || hasDailyGoal(for: nutrientId)
     }
 }
