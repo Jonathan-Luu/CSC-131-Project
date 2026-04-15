@@ -11,7 +11,9 @@ struct DashboardView: View {
         NavigationStack {
             List {
                 ForEach(NutrientCategory.allCases, id: \.self) { category in
-                    let defs = NutrientCatalog.tracked.filter { $0.category == category }
+                    let defs = NutrientCatalog.tracked.filter {
+                        $0.category == category && hasDailyGoal(for: $0.id)
+                    }
                     if !defs.isEmpty {
                         Section(category.rawValue) {
                             ForEach(defs) { def in
@@ -73,5 +75,9 @@ struct DashboardView: View {
     private func normalizedProgress(value: Double, goal: Double) -> Double {
         guard goal > 0 else { return 0 }
         return min(value / goal, 1)
+    }
+
+    private func hasDailyGoal(for nutrientId: Int) -> Bool {
+        (store.goal.targets[nutrientId] ?? 0) > 0
     }
 }
