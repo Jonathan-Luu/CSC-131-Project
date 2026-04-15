@@ -2,7 +2,7 @@ import SwiftUI
 
 struct DashboardView: View {
     @EnvironmentObject private var store: NutritionStore
-    @State private var showAllNutrients = false
+    @State private var showAllNutrientsExpanded = false
 
     private var totals: [Int: Double] {
         store.todaysTotals
@@ -13,7 +13,7 @@ struct DashboardView: View {
             List {
                 ForEach(NutrientCategory.allCases, id: \.self) { category in
                     let defs = NutrientCatalog.tracked.filter {
-                        $0.category == category && shouldShowNutrient($0.id)
+                        $0.category == category && hasDailyGoal(for: $0.id)
                     }
                     if !defs.isEmpty {
                         Section(category.rawValue) {
@@ -25,7 +25,24 @@ struct DashboardView: View {
                 }
 
                 Section {
-                    Toggle("Show All Nutrients", isOn: $showAllNutrients)
+                    DisclosureGroup(
+                        isExpanded: $showAllNutrientsExpanded
+                    ) {
+                        ForEach(NutrientCategory.allCases, id: \.self) { category in
+                            let defs = additionalDefinitions(in: category)
+                            if !defs.isEmpty {
+                                Text(category.rawValue)
+                                    .font(.headline)
+                                    .padding(.top, 4)
+
+                                ForEach(defs) { def in
+                                    nutrientRow(def: def, value: totals[def.id] ?? 0)
+                                }
+                            }
+                        }
+                    } label: {
+                        Text("Show All Nutrients")
+                    }
                 }
 
                 Section("Goal Consistency") {
@@ -86,7 +103,9 @@ struct DashboardView: View {
         (store.goal.targets[nutrientId] ?? 0) > 0
     }
 
-    private func shouldShowNutrient(_ nutrientId: Int) -> Bool {
-        showAllNutrients || hasDailyGoal(for: nutrientId)
+    private func additionalDefinitions(in category: NutrientCategory) -> [NutrientCatalog.Definition] {
+        NutrientCatalog.tracked.filter {
+            $0.category == category && !hasDailyGoal(for: $0.id)
+        }
     }
 }
