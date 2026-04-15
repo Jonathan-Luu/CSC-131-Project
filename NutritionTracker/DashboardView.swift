@@ -29,23 +29,29 @@ struct DashboardView: View {
                     DisclosureGroup(
                         isExpanded: $showAllNutrientsExpanded
                     ) {
-                        ForEach(NutrientCategory.allCases, id: \.self) { category in
-                            let defs = additionalDefinitions(in: category)
-                            if !defs.isEmpty {
-                                DisclosureGroup(
-                                    isExpanded: additionalCategoryBinding(for: category)
-                                ) {
-                                    ForEach(defs) { def in
-                                        nutrientRow(def: def, value: totals[def.id] ?? 0)
+                        if untrackedDefinitions.isEmpty {
+                            Text("You're currently tracking all nutrients")
+                                .font(.footnote)
+                                .foregroundStyle(.secondary)
+                        } else {
+                            ForEach(NutrientCategory.allCases, id: \.self) { category in
+                                let defs = additionalDefinitions(in: category)
+                                if !defs.isEmpty {
+                                    DisclosureGroup(
+                                        isExpanded: additionalCategoryBinding(for: category)
+                                    ) {
+                                        ForEach(defs) { def in
+                                            nutrientRow(def: def, value: totals[def.id] ?? 0)
+                                        }
+                                    } label: {
+                                        Text(category.rawValue)
+                                            .font(.headline)
                                     }
-                                } label: {
-                                    Text(category.rawValue)
-                                        .font(.headline)
                                 }
                             }
                         }
                     } label: {
-                        Text("Show All Nutrients")
+                        Text("Show Untracked Nutrients")
                     }
                 }
 
@@ -113,9 +119,7 @@ struct DashboardView: View {
     }
 
     private func additionalDefinitions(in category: NutrientCategory) -> [NutrientCatalog.Definition] {
-        NutrientCatalog.tracked.filter {
-            $0.category == category && !hasDailyGoal(for: $0.id)
-        }
+        untrackedDefinitions.filter { $0.category == category }
     }
 
     private func additionalCategoryBinding(for category: NutrientCategory) -> Binding<Bool> {
@@ -129,5 +133,9 @@ struct DashboardView: View {
                 }
             }
         )
+    }
+
+    private var untrackedDefinitions: [NutrientCatalog.Definition] {
+        NutrientCatalog.tracked.filter { !hasDailyGoal(for: $0.id) }
     }
 }
