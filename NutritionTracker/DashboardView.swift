@@ -54,10 +54,10 @@ struct DashboardView: View {
 
             if goal > 0 {
                 if def.goalIsMaximum {
-                    ProgressView(value: normalizedProgress(value: value, goal: goal, prefersLess: def.goalIsMaximum))
+                    ProgressView(value: normalizedProgress(value: value, goal: goal))
                         .tint(value > goal ? .red : .yellow)
                 } else {
-                    ProgressView(value: normalizedProgress(value: value, goal: goal, prefersLess: def.goalIsMaximum))
+                    ProgressView(value: normalizedProgress(value: value, goal: goal))
                         .tint(value > goal ? .green : .gray)
                 }
             }
@@ -70,11 +70,8 @@ struct DashboardView: View {
         return String(format: "%.2f", x)
     }
 
-    private func normalizedProgress(value: Double, goal: Double, prefersLess: Bool) -> Double {
+    private func normalizedProgress(value: Double, goal: Double) -> Double {
         guard goal > 0 else { return 0 }
-        if prefersLess {
-            return min(goal / max(value, 0.0001), 1)
-        }
         return min(value / goal, 1)
     }
 }
