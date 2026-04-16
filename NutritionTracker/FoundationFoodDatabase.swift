@@ -124,6 +124,7 @@ final class FoundationFoodDatabase: ObservableObject {
 
     /// Safer browse label used only for UI grouping; underlying USDA items stay unchanged.
     static func browseDisplayName(for description: String) -> String {
+        let components = significantBrowseComponents(from: description)
         let lower = description.lowercased()
 
         if lower.contains("chicken") {
@@ -131,6 +132,15 @@ final class FoundationFoodDatabase: ObservableObject {
         }
         if lower.contains("turkey") {
             return poultryDisplayName(base: "Turkey", description: lower) ?? description
+        }
+        if let meat = meatDisplayName(description: lower) {
+            return meat
+        }
+        if let seafood = seafoodDisplayName(from: components) {
+            return seafood
+        }
+        if let generic = genericDisplayName(from: components) {
+            return generic
         }
 
         return description
@@ -145,6 +155,73 @@ final class FoundationFoodDatabase: ObservableObject {
         if description.contains("gizzard") { return "\(base) Gizzard" }
         if description.contains("ground") { return "Ground \(base)" }
         return description.contains(base.lowercased()) ? base : nil
+    }
+
+    private static func meatDisplayName(description: String) -> String? {
+        let proteins: [(String, String)] = [
+            ("beef", "Beef"),
+            ("pork", "Pork"),
+            ("lamb", "Lamb"),
+            ("veal", "Veal"),
+            ("bison", "Bison"),
+            ("duck", "Duck"),
+            ("goose", "Goose"),
+        ]
+
+        guard let protein = proteins.first(where: { description.contains($0.0) })?.1 else { return nil }
+
+        if description.contains("ground") { return "Ground \(protein)" }
+        if description.contains("liver") { return "\(protein) Liver" }
+        if description.contains("rib") { return "\(protein) Rib" }
+        if description.contains("loin") { return "\(protein) Loin" }
+        if description.contains("shoulder") { return "\(protein) Shoulder" }
+        if description.contains("leg") { return "\(protein) Leg" }
+        if description.contains("chop") { return "\(protein) Chop" }
+        if description.contains("steak") { return "\(protein) Steak" }
+        if description.contains("roast") { return "\(protein) Roast" }
+        return protein
+    }
+
+    private static func seafoodDisplayName(from components: [String]) -> String? {
+        guard let first = components.first?.lowercased() else { return nil }
+        guard ["fish", "shellfish", "crustaceans", "mollusks"].contains(first) else { return nil }
+        guard components.count >= 2 else { return components.first }
+        return components[1]
+    }
+
+    private static func genericDisplayName(from components: [String]) -> String? {
+        guard let first = components.first else { return nil }
+        let firstLower = first.lowercased()
+        let useSecondComponent = Set([
+            "milk", "cheese", "yogurt", "rice", "bread", "pasta",
+            "beans", "peas", "lentils", "nuts", "seeds", "oil",
+            "oils", "cereal", "flour", "crackers",
+        ])
+
+        if useSecondComponent.contains(firstLower), components.count >= 2 {
+            return "\(first) \(components[1])"
+        }
+
+        return first
+    }
+
+    private static func significantBrowseComponents(from description: String) -> [String] {
+        let ignoredPhrases = [
+            "raw", "cooked", "roasted", "baked", "broiled", "fried", "boiled",
+            "steamed", "grilled", "braised", "stewed", "microwaved",
+            "with skin", "without skin", "meat and skin", "meat only",
+            "broilers or fryers", "separable lean and fat", "lean and fat",
+            "commercial", "commercially prepared", "with added vitamin a and vitamin d",
+            "with salt", "without salt",
+        ]
+
+        return description
+            .split(separator: ",")
+            .map { $0.trimmingCharacters(in: .whitespacesAndNewlines) }
+            .filter { component in
+                let lower = component.lowercased()
+                return !lower.isEmpty && !ignoredPhrases.contains(lower)
+            }
     }
 
     private func load() async {
