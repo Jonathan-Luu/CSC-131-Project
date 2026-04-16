@@ -76,11 +76,11 @@ struct BMRCalculatorView: View {
                     .pickerStyle(.segmented)
 
                     Picker("Activity", selection: binding(for: \.activityMultiplier)) {
-                        Text("Sedentary (1.2)").tag(1.2)
-                        Text("Light (1.375)").tag(1.375)
-                        Text("Moderate (1.55)").tag(1.55)
-                        Text("Active (1.725)").tag(1.725)
-                        Text("Very Active (1.9)").tag(1.9)
+                        Text("Sedentary").tag(1.2)
+                        Text("Light").tag(1.375)
+                        Text("Moderate").tag(1.55)
+                        Text("Active").tag(1.725)
+                        Text("Very Active").tag(1.9)
                     }
                 }
 

@@ -109,7 +109,7 @@ final class NutritionStore: ObservableObject {
         } else {
             base = 10 * profile.weightKg + 6.25 * profile.heightCm - 5 * Double(profile.age) - 161
         }
-        return base * profile.activityMultiplier
+        return max(0, base * profile.activityMultiplier)
     }
 
     private func totals(for foods: [FoodEntry]) -> [Int: Double] {
