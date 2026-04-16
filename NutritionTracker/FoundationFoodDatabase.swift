@@ -127,17 +127,23 @@ final class FoundationFoodDatabase: ObservableObject {
         let components = significantBrowseComponents(from: description)
         let lower = description.lowercased()
 
+        if isFlourLike(description: lower) {
+            return "Flour"
+        }
+        if isCheeseLike(description: lower) {
+            return "Cheese"
+        }
+        if isYogurtLike(description: lower) {
+            return "Yogurt"
+        }
+        if isMilkLike(description: lower) {
+            return "Milk"
+        }
         if isBeanLike(description: lower) {
             return "Beans"
         }
         if isRiceLike(description: lower) {
             return "Rice"
-        }
-        if isMilkLike(description: lower) {
-            return "Milk"
-        }
-        if isFlourLike(description: lower) {
-            return "Flour"
         }
         if isShellfishLike(description: lower, components: components) {
             return "Shellfish"
@@ -185,11 +191,26 @@ final class FoundationFoodDatabase: ObservableObject {
     }
 
     private static func isRiceLike(description: String) -> Bool {
-        description.contains("rice")
+        description.contains("rice") && !isFlourLike(description: description)
     }
 
     private static func isMilkLike(description: String) -> Bool {
-        description.contains("milk")
+        let milkTerms = [
+            "milk,", "milk ", "buttermilk", "chocolate milk",
+            "evaporated milk", "condensed milk",
+        ]
+        return milkTerms.contains(where: { description.contains($0) })
+    }
+
+    private static func isCheeseLike(description: String) -> Bool {
+        let cheeseTerms = [
+            "cheese", "cottage cheese", "cream cheese",
+        ]
+        return cheeseTerms.contains(where: { description.contains($0) })
+    }
+
+    private static func isYogurtLike(description: String) -> Bool {
+        description.contains("yogurt") || description.contains("yoghurt")
     }
 
     private static func isFlourLike(description: String) -> Bool {
@@ -215,7 +236,8 @@ final class FoundationFoodDatabase: ObservableObject {
             "fish", "salmon", "tuna", "cod", "tilapia", "trout",
             "sardine", "sardines", "anchovy", "anchovies",
             "halibut", "herring", "mackerel", "perch", "snapper",
-            "sole", "catfish",
+            "sole", "catfish", "mahi mahi", "sea bass", "seabass",
+            "grouper", "pollock", "flounder", "haddock", "rockfish",
         ]
         if fishTerms.contains(where: { description.contains($0) }) {
             return true
