@@ -122,6 +122,31 @@ final class FoundationFoodDatabase: ObservableObject {
         return out
     }
 
+    /// Safer browse label used only for UI grouping; underlying USDA items stay unchanged.
+    static func browseDisplayName(for description: String) -> String {
+        let lower = description.lowercased()
+
+        if lower.contains("chicken") {
+            return poultryDisplayName(base: "Chicken", description: lower) ?? description
+        }
+        if lower.contains("turkey") {
+            return poultryDisplayName(base: "Turkey", description: lower) ?? description
+        }
+
+        return description
+    }
+
+    private static func poultryDisplayName(base: String, description: String) -> String? {
+        if description.contains("breast") { return "\(base) Breast" }
+        if description.contains("thigh") { return "\(base) Thigh" }
+        if description.contains("leg") || description.contains("drumstick") { return "\(base) Leg" }
+        if description.contains("wing") { return "\(base) Wing" }
+        if description.contains("liver") { return "\(base) Liver" }
+        if description.contains("gizzard") { return "\(base) Gizzard" }
+        if description.contains("ground") { return "Ground \(base)" }
+        return description.contains(base.lowercased()) ? base : nil
+    }
+
     private func load() async {
         isLoading = true
         loadError = nil
