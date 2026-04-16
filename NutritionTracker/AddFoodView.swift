@@ -17,6 +17,7 @@ struct AddFoodView: View {
     @State private var searchText = ""
     @State private var browseGroup: FoodBrowseGroup = .all
     @State private var meatSubfilter: FoodMeatSubfilter = .all
+    @State private var expandedUSDAFoodGroups: Set<String> = []
     /// USDA flow: pick a category row first, then (if meat) pick a meat type, then see foods.
     @State private var usdaPhase: USDABrowsePhase = .pickCategory
     @State private var selectedItem: FoundationFoodItem?
@@ -26,6 +27,12 @@ struct AddFoodView: View {
         case pickCategory
         case pickMeatSubtype
         case listFoods
+    }
+
+    private struct USDAFoodGroup: Identifiable {
+        let id: String
+        let title: String
+        let items: [FoundationFoodItem]
     }
 
     var body: some View {
@@ -102,6 +109,7 @@ struct AddFoodView: View {
     }
 
     private func goBackUSDABrowse() {
+        expandedUSDAFoodGroups.removeAll()
         switch usdaPhase {
         case .listFoods:
             searchText = ""
@@ -126,9 +134,11 @@ struct AddFoodView: View {
         browseGroup = .all
         meatSubfilter = .all
         searchText = ""
+        expandedUSDAFoodGroups.removeAll()
     }
 
     private func selectBrowseGroup(_ group: FoodBrowseGroup) {
+        expandedUSDAFoodGroups.removeAll()
         browseGroup = group
         if group == .meatPoultry {
             meatSubfilter = .all
@@ -139,6 +149,7 @@ struct AddFoodView: View {
     }
 
     private func selectMeatSubfilter(_ sub: FoodMeatSubfilter) {
+        expandedUSDAFoodGroups.removeAll()
         meatSubfilter = sub
         usdaPhase = .listFoods
     }
@@ -246,22 +257,46 @@ struct AddFoodView: View {
                                 .font(.caption)
                                 .foregroundStyle(.secondary)
                         }
-                        ForEach(foodDatabase.search(searchText, browse: browseGroup, meatSubfilter: meatSubfilter)) { item in
-                            Button {
-                                selectedItem = item
-                                portionGrams = "100"
-                            } label: {
-                                usdaRow(
-                                    title: item.description,
-                                    detail: item.fdcCategoryDescription,
-                                    footnote: "Tap to choose portion (per 100 g in database)",
-                                    detailIsTertiary: true
-                                )
+                        ForEach(groupedUSDAFoods) { group in
+                            if group.items.count == 1 && group.title == group.items[0].description {
+                                usdaFoodButton(group.items[0])
+                            } else {
+                                DisclosureGroup(
+                                    isExpanded: usdaFoodGroupBinding(for: group.id)
+                                ) {
+                                    ForEach(group.items) { item in
+                                        usdaFoodButton(item)
+                                    }
+                                } label: {
+                                    usdaRow(
+                                        title: group.title,
+                                        detail: "\(group.items.count) variants",
+                                        footnote: "Tap to choose a specific option",
+                                        detailIsTertiary: true
+                                    )
+                                }
                             }
                         }
                     }
                 }
             }
+        }
+    }
+
+    private var groupedUSDAFoods: [USDAFoodGroup] {
+        let foods = foodDatabase.search(searchText, browse: browseGroup, meatSubfilter: meatSubfilter)
+        let grouped = Dictionary(grouping: foods) { item in
+            FoundationFoodDatabase.browseDisplayName(for: item.description)
+        }
+
+        return grouped.keys.sorted().map { key in
+            USDAFoodGroup(
+                id: key,
+                title: key,
+                items: grouped[key, default: []].sorted {
+                    $0.description.localizedCaseInsensitiveCompare($1.description) == .orderedAscending
+                }
+            )
         }
     }
 
@@ -307,6 +342,33 @@ struct AddFoodView: View {
                 .font(.caption)
                 .foregroundStyle(.secondary)
         }
+    }
+
+    private func usdaFoodButton(_ item: FoundationFoodItem) -> some View {
+        Button {
+            selectedItem = item
+            portionGrams = "100"
+        } label: {
+            usdaRow(
+                title: item.description,
+                detail: item.fdcCategoryDescription,
+                footnote: "Tap to choose portion (per 100 g in database)",
+                detailIsTertiary: true
+            )
+        }
+    }
+
+    private func usdaFoodGroupBinding(for id: String) -> Binding<Bool> {
+        Binding(
+            get: { expandedUSDAFoodGroups.contains(id) },
+            set: { isExpanded in
+                if isExpanded {
+                    expandedUSDAFoodGroups.insert(id)
+                } else {
+                    expandedUSDAFoodGroups.remove(id)
+                }
+            }
+        )
     }
 
     private func portionSheet(for item: FoundationFoodItem) -> some View {
