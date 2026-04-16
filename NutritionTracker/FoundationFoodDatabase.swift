@@ -127,6 +127,25 @@ final class FoundationFoodDatabase: ObservableObject {
         let components = significantBrowseComponents(from: description)
         let lower = description.lowercased()
 
+        if isBeanLike(description: lower) {
+            return "Beans"
+        }
+        if isRiceLike(description: lower) {
+            return "Rice"
+        }
+        if isMilkLike(description: lower) {
+            return "Milk"
+        }
+        if isFlourLike(description: lower) {
+            return "Flour"
+        }
+        if isShellfishLike(description: lower, components: components) {
+            return "Shellfish"
+        }
+        if isFishLike(description: lower, components: components) {
+            return "Fish"
+        }
+
         if lower.contains("chicken") {
             return poultryDisplayName(base: "Chicken", description: lower) ?? description
         }
@@ -155,6 +174,53 @@ final class FoundationFoodDatabase: ObservableObject {
         if description.contains("gizzard") { return "\(base) Gizzard" }
         if description.contains("ground") { return "Ground \(base)" }
         return description.contains(base.lowercased()) ? base : nil
+    }
+
+    private static func isBeanLike(description: String) -> Bool {
+        let beanTerms = [
+            "beans", "bean,", "bean ", "lentils", "lentil", "garbanzo",
+            "chickpea", "chickpeas", "hummus",
+        ]
+        return beanTerms.contains(where: { description.contains($0) })
+    }
+
+    private static func isRiceLike(description: String) -> Bool {
+        description.contains("rice")
+    }
+
+    private static func isMilkLike(description: String) -> Bool {
+        description.contains("milk")
+    }
+
+    private static func isFlourLike(description: String) -> Bool {
+        description.contains("flour")
+    }
+
+    private static func isShellfishLike(description: String, components: [String]) -> Bool {
+        let shellfishTerms = [
+            "shellfish", "shrimp", "prawn", "crab", "lobster",
+            "oyster", "clam", "mussel", "scallop",
+        ]
+        if shellfishTerms.contains(where: { description.contains($0) }) {
+            return true
+        }
+        if let first = components.first?.lowercased() {
+            return ["shellfish", "crustaceans", "mollusks"].contains(first)
+        }
+        return false
+    }
+
+    private static func isFishLike(description: String, components: [String]) -> Bool {
+        let fishTerms = [
+            "fish", "salmon", "tuna", "cod", "tilapia", "trout",
+            "sardine", "sardines", "anchovy", "anchovies",
+            "halibut", "herring", "mackerel", "perch", "snapper",
+            "sole", "catfish",
+        ]
+        if fishTerms.contains(where: { description.contains($0) }) {
+            return true
+        }
+        return components.first?.lowercased() == "fish"
     }
 
     private static func meatDisplayName(description: String) -> String? {
