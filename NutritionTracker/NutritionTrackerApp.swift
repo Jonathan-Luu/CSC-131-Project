@@ -14,6 +14,7 @@ class AppDelegate: NSObject, UIApplicationDelegate {
 struct NutritionTrackerApp: App {
     @StateObject private var store = NutritionStore()
     @StateObject private var foodDatabase = FoundationFoodDatabase()
+    @StateObject private var authViewModel = AuthViewModel()
     @UIApplicationDelegateAdaptor(AppDelegate.self) var delegate
     
     var body: some Scene {
@@ -21,6 +22,7 @@ struct NutritionTrackerApp: App {
             ContentView()
                 .environmentObject(store)
                 .environmentObject(foodDatabase)
+                .environmentObject(authViewModel)
         }
     }
 }

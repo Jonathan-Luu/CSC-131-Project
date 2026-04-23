@@ -28,7 +28,10 @@
 		A1B2C3D4E5F6000000000119 /* DayHistoryView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1B2C3D4E5F6000000000220 /* DayHistoryView.swift */; };
 		A1B2C3D4E5F6000000000120 /* Date+Calendar.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1B2C3D4E5F6000000000221 /* Date+Calendar.swift */; };
 		A1B2C3D4E5F6000000000121 /* AllEntriesHistoryView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1B2C3D4E5F6000000000222 /* AllEntriesHistoryView.swift */; };
+		AB752DE02F99C000007A2817 /* AuthViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB752DDF2F99C000007A2817 /* AuthViewModel.swift */; };
+		AB752DE12F99C001007A2817 /* LoginView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB752DE12F99C000007A2817 /* LoginView.swift */; };
 		AB752DE52F99C18F007A2817 /* FirebaseCore in Frameworks */ = {isa = PBXBuildFile; productRef = AB752DE42F99C18F007A2817 /* FirebaseCore */; };
+		AB752DEC2F99C500007A2817 /* FirebaseAuth in Frameworks */ = {isa = PBXBuildFile; productRef = AB752DEB2F99C500007A2817 /* FirebaseAuth */; };
 		AB752DE72F99C1B0007A2817 /* FirebaseAnalytics in Frameworks */ = {isa = PBXBuildFile; productRef = AB752DE62F99C1B0007A2817 /* FirebaseAnalytics */; };
 		AB752DE92F99C404007A2817 /* GoogleService-Info.plist in Resources */ = {isa = PBXBuildFile; fileRef = AB752DE82F99C404007A2817 /* GoogleService-Info.plist */; };
 /* End PBXBuildFile section */
@@ -57,7 +60,9 @@
 		A1B2C3D4E5F6000000000220 /* DayHistoryView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DayHistoryView.swift; sourceTree = "<group>"; };
 		A1B2C3D4E5F6000000000221 /* Date+Calendar.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Date+Calendar.swift"; sourceTree = "<group>"; };
 		A1B2C3D4E5F6000000000222 /* AllEntriesHistoryView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AllEntriesHistoryView.swift; sourceTree = "<group>"; };
+		AB752DDF2F99C000007A2817 /* AuthViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AuthViewModel.swift; sourceTree = "<group>"; };
 		AB752DE82F99C404007A2817 /* GoogleService-Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = "GoogleService-Info.plist"; sourceTree = "<group>"; };
+		AB752DE12F99C000007A2817 /* LoginView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LoginView.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -65,6 +70,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				AB752DEC2F99C500007A2817 /* FirebaseAuth in Frameworks */,
 				AB752DE72F99C1B0007A2817 /* FirebaseAnalytics in Frameworks */,
 				AB752DE52F99C18F007A2817 /* FirebaseCore in Frameworks */,
 			);
@@ -115,7 +121,9 @@
 				A1B2C3D4E5F6000000000209 /* RecommendationsView.swift */,
 				A1B2C3D4E5F6000000000210 /* BMRCalculatorView.swift */,
 				A1B2C3D4E5F6000000000211 /* Info.plist */,
+				AB752DDF2F99C000007A2817 /* AuthViewModel.swift */,
 				AB752DE82F99C404007A2817 /* GoogleService-Info.plist */,
+				AB752DE12F99C000007A2817 /* LoginView.swift */,
 			);
 			path = NutritionTracker;
 			sourceTree = "<group>";
@@ -212,6 +220,7 @@
 				A1B2C3D4E5F6000000000101 /* NutritionTrackerApp.swift in Sources */,
 				A1B2C3D4E5F6000000000102 /* ContentView.swift in Sources */,
 				A1B2C3D4E5F6000000000103 /* Models.swift in Sources */,
+				AB752DE02F99C000007A2817 /* AuthViewModel.swift in Sources */,
 				A1B2C3D4E5F6000000000111 /* NutrientCatalog.swift in Sources */,
 				A1B2C3D4E5F6000000000114 /* NutrientNormalization.swift in Sources */,
 				A1B2C3D4E5F6000000000104 /* NutritionStore.swift in Sources */,
@@ -227,6 +236,7 @@
 				A1B2C3D4E5F6000000000116 /* FoodEntryDetailView.swift in Sources */,
 				A1B2C3D4E5F6000000000120 /* Date+Calendar.swift in Sources */,
 				A1B2C3D4E5F6000000000108 /* GoalsView.swift in Sources */,
+				AB752DE12F99C001007A2817 /* LoginView.swift in Sources */,
 				A1B2C3D4E5F6000000000109 /* RecommendationsView.swift in Sources */,
 				A1B2C3D4E5F6000000000110 /* BMRCalculatorView.swift in Sources */,
 			);
@@ -403,6 +413,11 @@
 			isa = XCSwiftPackageProductDependency;
 			package = ABC2A0A92F99BD6D0069B610 /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */;
 			productName = FirebaseAnalytics;
+		};
+		AB752DEB2F99C500007A2817 /* FirebaseAuth */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = ABC2A0A92F99BD6D0069B610 /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */;
+			productName = FirebaseAuth;
 		};
 /* End XCSwiftPackageProductDependency section */
 	};
