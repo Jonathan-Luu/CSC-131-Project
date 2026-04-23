@@ -6,7 +6,7 @@ struct AddFoodView: View {
 
     private enum Mode: String, CaseIterable {
         case manual = "Manual"
-        case usda = "USDA Database"
+        case usda = "Lookup Food"
     }
 
     @State private var mode: Mode = .manual
