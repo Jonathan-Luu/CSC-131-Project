@@ -30,6 +30,7 @@
 		A1B2C3D4E5F6000000000121 /* AllEntriesHistoryView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1B2C3D4E5F6000000000222 /* AllEntriesHistoryView.swift */; };
 		AB752DE52F99C18F007A2817 /* FirebaseCore in Frameworks */ = {isa = PBXBuildFile; productRef = AB752DE42F99C18F007A2817 /* FirebaseCore */; };
 		AB752DE72F99C1B0007A2817 /* FirebaseAnalytics in Frameworks */ = {isa = PBXBuildFile; productRef = AB752DE62F99C1B0007A2817 /* FirebaseAnalytics */; };
+		AB752DE92F99C404007A2817 /* GoogleService-Info.plist in Resources */ = {isa = PBXBuildFile; fileRef = AB752DE82F99C404007A2817 /* GoogleService-Info.plist */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -56,6 +57,7 @@
 		A1B2C3D4E5F6000000000220 /* DayHistoryView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DayHistoryView.swift; sourceTree = "<group>"; };
 		A1B2C3D4E5F6000000000221 /* Date+Calendar.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Date+Calendar.swift"; sourceTree = "<group>"; };
 		A1B2C3D4E5F6000000000222 /* AllEntriesHistoryView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AllEntriesHistoryView.swift; sourceTree = "<group>"; };
+		AB752DE82F99C404007A2817 /* GoogleService-Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = "GoogleService-Info.plist"; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -113,6 +115,7 @@
 				A1B2C3D4E5F6000000000209 /* RecommendationsView.swift */,
 				A1B2C3D4E5F6000000000210 /* BMRCalculatorView.swift */,
 				A1B2C3D4E5F6000000000211 /* Info.plist */,
+				AB752DE82F99C404007A2817 /* GoogleService-Info.plist */,
 			);
 			path = NutritionTracker;
 			sourceTree = "<group>";
@@ -195,6 +198,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				A1B2C3D4E5F6000000000113 /* FoodData_Central_foundation_food_json_2025-12-18.json in Resources */,
+				AB752DE92F99C404007A2817 /* GoogleService-Info.plist in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

@@ -14,7 +14,7 @@ class AppDelegate: NSObject, UIApplicationDelegate {
 struct NutritionTrackerApp: App {
     @StateObject private var store = NutritionStore()
     @StateObject private var foodDatabase = FoundationFoodDatabase()
-    //@UIApplicationDelegateAdaptor(AppDelegate.self) var delegate
+    @UIApplicationDelegateAdaptor(AppDelegate.self) var delegate
     
     var body: some Scene {
         WindowGroup {
