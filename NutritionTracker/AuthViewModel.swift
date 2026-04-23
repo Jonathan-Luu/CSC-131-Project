@@ -30,7 +30,9 @@ final class AuthViewModel: ObservableObject {
     }
 
     func submit() async {
-        guard !email.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty else {
+        email = email.trimmingCharacters(in: .whitespacesAndNewlines)
+
+        guard !email.isEmpty else {
             errorMessage = "Enter an email address."
             return
         }
@@ -52,7 +54,7 @@ final class AuthViewModel: ObservableObject {
 
             password = ""
         } catch {
-            errorMessage = (error as NSError).localizedDescription
+            errorMessage = Self.describe(error)
         }
 
         isLoading = false
@@ -63,7 +65,44 @@ final class AuthViewModel: ObservableObject {
             try Auth.auth().signOut()
             password = ""
         } catch {
-            errorMessage = (error as NSError).localizedDescription
+            errorMessage = Self.describe(error)
         }
+    }
+
+    private static func describe(_ error: Error) -> String {
+        let nsError = error as NSError
+
+        if let authCode = AuthErrorCode(rawValue: nsError.code) {
+            switch authCode {
+            case .invalidEmail:
+                return "That email address is not valid."
+            case .wrongPassword:
+                return "That password is incorrect."
+            case .userNotFound:
+                return "No account was found for that email."
+            case .emailAlreadyInUse:
+                return "That email is already attached to an account."
+            case .weakPassword:
+                return "That password is too weak."
+            case .networkError:
+                return "Firebase could not reach the network. Check your connection and try again."
+            case .operationNotAllowed:
+                return "Email/password sign-in is not enabled in Firebase yet."
+            default:
+                break
+            }
+
+            let detail = nsError.userInfo[NSLocalizedFailureReasonErrorKey] as? String
+                ?? nsError.userInfo[NSUnderlyingErrorKey].map { String(describing: $0) }
+                ?? nsError.localizedFailureReason
+
+            if let detail, !detail.isEmpty {
+                return "Firebase auth error (\(authCode.rawValue)): \(detail)"
+            }
+
+            return "Firebase auth error (\(authCode.rawValue)): \(nsError.localizedDescription)"
+        }
+
+        return nsError.localizedDescription
     }
 }
