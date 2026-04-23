@@ -28,6 +28,8 @@
 		A1B2C3D4E5F6000000000119 /* DayHistoryView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1B2C3D4E5F6000000000220 /* DayHistoryView.swift */; };
 		A1B2C3D4E5F6000000000120 /* Date+Calendar.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1B2C3D4E5F6000000000221 /* Date+Calendar.swift */; };
 		A1B2C3D4E5F6000000000121 /* AllEntriesHistoryView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1B2C3D4E5F6000000000222 /* AllEntriesHistoryView.swift */; };
+		AB752DE52F99C18F007A2817 /* FirebaseCore in Frameworks */ = {isa = PBXBuildFile; productRef = AB752DE42F99C18F007A2817 /* FirebaseCore */; };
+		AB752DE72F99C1B0007A2817 /* FirebaseAnalytics in Frameworks */ = {isa = PBXBuildFile; productRef = AB752DE62F99C1B0007A2817 /* FirebaseAnalytics */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -61,6 +63,8 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				AB752DE72F99C1B0007A2817 /* FirebaseAnalytics in Frameworks */,
+				AB752DE52F99C18F007A2817 /* FirebaseCore in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -72,6 +76,7 @@
 			children = (
 				A1B2C3D4E5F6000000000010 /* NutritionTracker */,
 				A1B2C3D4E5F6000000000011 /* Databases */,
+				AB752DE32F99C18F007A2817 /* Frameworks */,
 				A1B2C3D4E5F6000000000004 /* Products */,
 			);
 			sourceTree = "<group>";
@@ -118,6 +123,13 @@
 				A1B2C3D4E5F6000000000214 /* FoodData_Central_foundation_food_json_2025-12-18.json */,
 			);
 			path = Databases;
+			sourceTree = "<group>";
+		};
+		AB752DE32F99C18F007A2817 /* Frameworks */ = {
+			isa = PBXGroup;
+			children = (
+			);
+			name = Frameworks;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -376,6 +388,19 @@
 			};
 		};
 /* End XCRemoteSwiftPackageReference section */
+
+/* Begin XCSwiftPackageProductDependency section */
+		AB752DE42F99C18F007A2817 /* FirebaseCore */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = ABC2A0A92F99BD6D0069B610 /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */;
+			productName = FirebaseCore;
+		};
+		AB752DE62F99C1B0007A2817 /* FirebaseAnalytics */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = ABC2A0A92F99BD6D0069B610 /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */;
+			productName = FirebaseAnalytics;
+		};
+/* End XCSwiftPackageProductDependency section */
 	};
 	rootObject = A1B2C3D4E5F6000000000000 /* Project object */;
 }
