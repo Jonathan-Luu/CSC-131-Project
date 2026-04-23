@@ -139,6 +139,7 @@ struct AddFoodView: View {
 
     private func selectBrowseGroup(_ group: FoodBrowseGroup) {
         expandedUSDAFoodGroups.removeAll()
+        searchText = ""
         browseGroup = group
         if group == .meatPoultry {
             meatSubfilter = .all
@@ -150,6 +151,7 @@ struct AddFoodView: View {
 
     private func selectMeatSubfilter(_ sub: FoodMeatSubfilter) {
         expandedUSDAFoodGroups.removeAll()
+        searchText = ""
         meatSubfilter = sub
         usdaPhase = .listFoods
     }
@@ -214,19 +216,51 @@ struct AddFoodView: View {
                     switch usdaPhase {
                     case .pickCategory:
                         Section {
-                            Text("Choose a category to see foods. Meat & poultry has one more step to narrow by type.")
+                            TextField("Search all foods", text: $searchText)
+                                .textInputAutocapitalization(.never)
+                                .autocorrectionDisabled()
+                            Text("Search matches any word; order does not need to match the full name.")
                                 .font(.caption)
                                 .foregroundStyle(.secondary)
                         }
-                        ForEach(FoodBrowseGroup.allCases) { group in
-                            Button {
-                                selectBrowseGroup(group)
-                            } label: {
-                                usdaRow(
-                                    title: group.rawValue,
-                                    detail: usdaCategorySubtitle(for: group),
-                                    footnote: "Tap to browse"
-                                )
+
+                        if !searchText.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
+                            ForEach(groupedUSDAFoods) { group in
+                                if group.items.count == 1 && group.title == group.items[0].description {
+                                    usdaFoodButton(group.items[0])
+                                } else {
+                                    DisclosureGroup(
+                                        isExpanded: usdaFoodGroupBinding(for: group.id)
+                                    ) {
+                                        ForEach(group.items) { item in
+                                            usdaFoodButton(item)
+                                        }
+                                    } label: {
+                                        usdaRow(
+                                            title: group.title,
+                                            detail: "\(group.items.count) variants",
+                                            footnote: "Tap to choose a specific option",
+                                            detailIsTertiary: true
+                                        )
+                                    }
+                                }
+                            }
+                        } else {
+                            Section {
+                                Text("Choose a category to see foods. Meat & poultry has one more step to narrow by type.")
+                                    .font(.caption)
+                                    .foregroundStyle(.secondary)
+                            }
+                            ForEach(FoodBrowseGroup.allCases) { group in
+                                Button {
+                                    selectBrowseGroup(group)
+                                } label: {
+                                    usdaRow(
+                                        title: group.rawValue,
+                                        detail: usdaCategorySubtitle(for: group),
+                                        footnote: "Tap to browse"
+                                    )
+                                }
                             }
                         }
                     case .pickMeatSubtype:
