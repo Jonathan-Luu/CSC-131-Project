@@ -30,6 +30,8 @@
 		A1B2C3D4E5F6000000000121 /* AllEntriesHistoryView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1B2C3D4E5F6000000000222 /* AllEntriesHistoryView.swift */; };
 		AB752DE02F99C000007A2817 /* AuthViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB752DDF2F99C000007A2817 /* AuthViewModel.swift */; };
 		AB752DE12F99C001007A2817 /* LoginView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB752DE12F99C000007A2817 /* LoginView.swift */; };
+		AC752DF12F99C001007A2817 /* MoreView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AC752DF02F99C001007A2817 /* MoreView.swift */; };
+		AC752DF32F99C001007A2817 /* ProfileView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AC752DF22F99C001007A2817 /* ProfileView.swift */; };
 		AB752DE52F99C18F007A2817 /* FirebaseCore in Frameworks */ = {isa = PBXBuildFile; productRef = AB752DE42F99C18F007A2817 /* FirebaseCore */; };
 		AB752DEC2F99C500007A2817 /* FirebaseAuth in Frameworks */ = {isa = PBXBuildFile; productRef = AB752DEB2F99C500007A2817 /* FirebaseAuth */; };
 		AB752DE72F99C1B0007A2817 /* FirebaseAnalytics in Frameworks */ = {isa = PBXBuildFile; productRef = AB752DE62F99C1B0007A2817 /* FirebaseAnalytics */; };
@@ -63,6 +65,8 @@
 		AB752DDF2F99C000007A2817 /* AuthViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AuthViewModel.swift; sourceTree = "<group>"; };
 		AB752DE82F99C404007A2817 /* GoogleService-Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = "GoogleService-Info.plist"; sourceTree = "<group>"; };
 		AB752DE12F99C000007A2817 /* LoginView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LoginView.swift; sourceTree = "<group>"; };
+		AC752DF02F99C001007A2817 /* MoreView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MoreView.swift; sourceTree = "<group>"; };
+		AC752DF22F99C001007A2817 /* ProfileView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProfileView.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -124,6 +128,8 @@
 				AB752DDF2F99C000007A2817 /* AuthViewModel.swift */,
 				AB752DE82F99C404007A2817 /* GoogleService-Info.plist */,
 				AB752DE12F99C000007A2817 /* LoginView.swift */,
+				AC752DF02F99C001007A2817 /* MoreView.swift */,
+				AC752DF22F99C001007A2817 /* ProfileView.swift */,
 			);
 			path = NutritionTracker;
 			sourceTree = "<group>";
@@ -239,6 +245,8 @@
 				AB752DE12F99C001007A2817 /* LoginView.swift in Sources */,
 				A1B2C3D4E5F6000000000109 /* RecommendationsView.swift in Sources */,
 				A1B2C3D4E5F6000000000110 /* BMRCalculatorView.swift in Sources */,
+				AC752DF12F99C001007A2817 /* MoreView.swift in Sources */,
+				AC752DF32F99C001007A2817 /* ProfileView.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
