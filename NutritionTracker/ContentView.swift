@@ -23,11 +23,6 @@ struct ContentView: View {
                         .tabItem {
                             Label("Goals", systemImage: "target")
                         }
-                    RecommendationsView()
-                        .tabItem {
-                            Label("Suggestions", systemImage: "lightbulb")
-                        }
-
                     MoreView()
                         .tabItem {
                             Label("More", systemImage: "ellipsis.circle")

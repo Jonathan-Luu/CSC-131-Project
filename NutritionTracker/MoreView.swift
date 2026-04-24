@@ -18,6 +18,12 @@ struct MoreView: View {
                     } label: {
                         Label("BMR Calculator", systemImage: "figure.walk")
                     }
+                    
+                    NavigationLink {
+                        RecommendationsView()
+                    } label: {
+                        Label("Recommendations", systemImage: "lightbulb")
+                    }
                 }
             }
             .navigationTitle("More")
