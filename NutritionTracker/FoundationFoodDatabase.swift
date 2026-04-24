@@ -70,9 +70,9 @@ final class FoundationFoodDatabase: ObservableObject {
         let trimmed = query.trimmingCharacters(in: .whitespacesAndNewlines)
         var tokens = FoodSearchQuery.tokens(from: trimmed)
         if tokens.isEmpty, !trimmed.isEmpty {
-            tokens = [trimmed.lowercased()]
+            tokens = [FoodSearchQuery.canonicalToken(trimmed.lowercased())]
         }
-        let normalized = trimmed.lowercased()
+        let normalized = FoodSearchQuery.normalizedText(from: trimmed)
 
         var base = items
         if browse != .all {
@@ -279,7 +279,8 @@ final class FoundationFoodDatabase: ObservableObject {
 
     private static func genericDisplayName(from components: [String]) -> String? {
         guard let first = components.first else { return nil }
-        let firstLower = first.lowercased()
+        let singularFirst = displayTitle(for: first)
+        let firstLower = singularFirst.lowercased()
         let useSecondComponent = Set([
             "milk", "cheese", "yogurt", "rice", "bread", "pasta",
             "beans", "peas", "lentils", "nuts", "seeds", "oil",
@@ -287,10 +288,10 @@ final class FoundationFoodDatabase: ObservableObject {
         ])
 
         if useSecondComponent.contains(firstLower), components.count >= 2 {
-            return "\(first) \(components[1])"
+            return "\(singularFirst) \(displayTitle(for: components[1]))"
         }
 
-        return first
+        return singularFirst
     }
 
     private static func significantBrowseComponents(from description: String) -> [String] {
@@ -310,6 +311,18 @@ final class FoundationFoodDatabase: ObservableObject {
                 let lower = component.lowercased()
                 return !lower.isEmpty && !ignoredPhrases.contains(lower)
             }
+            .map { component in
+                component
+                    .split(separator: " ")
+                    .map { displayTitle(for: String($0)) }
+                    .joined(separator: " ")
+            }
+    }
+
+    private static func displayTitle(for token: String) -> String {
+        let canonical = FoodSearchQuery.canonicalToken(token)
+        guard !canonical.isEmpty else { return token }
+        return canonical.prefix(1).uppercased() + canonical.dropFirst()
     }
 
     private func load() async {
