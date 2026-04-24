@@ -1,5 +1,6 @@
 import Foundation
 import FirebaseFirestore
+import FirebaseAuth
 
 final class NutritionStore: ObservableObject {
     @Published var goal: NutritionGoal {
@@ -22,6 +23,7 @@ final class NutritionStore: ObservableObject {
     private var isApplyingRemote = false
     private var pendingCloudWrite: DispatchWorkItem?
     private var hasLoadedRemoteOnce = false
+    private var hasScheduledRemoteLoadFallback = false
 
     private let recommendationPool: [RecommendedFood] = [
         RecommendedFood(name: "Greek Yogurt (1 cup)", nutrients: [1008: 130, 1003: 23, 1253: 15]),
@@ -38,6 +40,9 @@ final class NutritionStore: ObservableObject {
         self.goal = Self.loadGoal(forKey: Self.goalKey)
         self.entries = Self.loadObject(forKey: Self.entriesKey, defaultValue: [])
         self.profile = Self.loadObject(forKey: Self.profileKey, defaultValue: .default)
+
+        // If the app starts already authenticated, immediately scope to that user.
+        setUser(uid: Auth.auth().currentUser?.uid)
     }
 
     /// Call when Firebase auth user changes so nutrition data is stored per account
@@ -53,6 +58,7 @@ final class NutritionStore: ObservableObject {
 
         self.uid = uid
         hasLoadedRemoteOnce = false
+        hasScheduledRemoteLoadFallback = false
 
         // Signed-out state should not show the previous user's data.
         guard let uid, !uid.isEmpty else {
@@ -109,6 +115,7 @@ final class NutritionStore: ObservableObject {
     }
 
     func addFood(name: String, nutrients: [Int: Double]) {
+        ensureUserIsCurrent()
         let trimmed = name.trimmingCharacters(in: .whitespacesAndNewlines)
         guard !trimmed.isEmpty else { return }
         let food = FoodEntry(name: trimmed, nutrients: nutrients)
@@ -116,10 +123,12 @@ final class NutritionStore: ObservableObject {
     }
 
     func deleteEntries(at offsets: IndexSet) {
+        ensureUserIsCurrent()
         entries.remove(atOffsets: offsets)
     }
 
     func updateGoal(targets: [Int: Double]) {
+        ensureUserIsCurrent()
         goal = NutritionGoal(targets: targets)
     }
 
@@ -202,6 +211,7 @@ final class NutritionStore: ObservableObject {
     }
 
     private func persist() {
+        ensureUserIsCurrent()
         let goalKey = scopedKey(Self.goalKey, uid: uid)
         let entriesKey = scopedKey(Self.entriesKey, uid: uid)
         let profileKey = scopedKey(Self.profileKey, uid: uid)
@@ -390,6 +400,23 @@ final class NutritionStore: ObservableObject {
             self.isApplyingRemote = false
             self.hasLoadedRemoteOnce = true
         }
+
+        // Fallback: if for any reason the listener doesn't fire (config/network),
+        // allow writes after a short delay so user-entered data still persists to the account.
+        if !hasScheduledRemoteLoadFallback {
+            hasScheduledRemoteLoadFallback = true
+            let expectedUid = uid
+            DispatchQueue.main.asyncAfter(deadline: .now() + 2.0) { [weak self] in
+                guard let self else { return }
+                guard self.uid == expectedUid else { return }
+                if !self.hasLoadedRemoteOnce {
+                    self.hasLoadedRemoteOnce = true
+                    if !self.entries.isEmpty || self.goal.targets != NutritionGoal.default.targets || self.profileIsNonDefault {
+                        self.scheduleCloudWrite()
+                    }
+                }
+            }
+        }
     }
 
     private func scheduleCloudWrite() {
@@ -452,5 +479,12 @@ final class NutritionStore: ObservableObject {
             || profile.lastWeightLb != d.lastWeightLb
             || profile.lastHeightFeet != d.lastHeightFeet
             || profile.lastHeightInches != d.lastHeightInches
+    }
+
+    private func ensureUserIsCurrent() {
+        let actualUid = Auth.auth().currentUser?.uid
+        if actualUid != uid {
+            setUser(uid: actualUid)
+        }
     }
 }
