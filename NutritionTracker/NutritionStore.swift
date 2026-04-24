@@ -296,7 +296,7 @@ final class NutritionStore: ObservableObject {
             // If no cloud doc exists yet, mark as loaded and (if we have local data) push it up once.
             if !snapshot.exists {
                 self.hasLoadedRemoteOnce = true
-                if !self.entries.isEmpty || self.goal != .default || self.profile != .default {
+                if !self.entries.isEmpty || self.goal.targets != NutritionGoal.default.targets || self.profileIsNonDefault {
                     self.scheduleCloudWrite()
                 }
                 return
@@ -440,5 +440,17 @@ final class NutritionStore: ObservableObject {
             ],
             merge: true
         )
+    }
+
+    private var profileIsNonDefault: Bool {
+        let d = UserProfile.default
+        return profile.age != d.age
+            || profile.weightKg != d.weightKg
+            || profile.heightCm != d.heightCm
+            || profile.isMale != d.isMale
+            || profile.activityMultiplier != d.activityMultiplier
+            || profile.lastWeightLb != d.lastWeightLb
+            || profile.lastHeightFeet != d.lastHeightFeet
+            || profile.lastHeightInches != d.lastHeightInches
     }
 }
