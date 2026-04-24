@@ -1,7 +1,6 @@
 import SwiftUI
 
 struct DashboardView: View {
-    @EnvironmentObject private var authViewModel: AuthViewModel
     @EnvironmentObject private var store: NutritionStore
     @State private var showAllNutrientsExpanded = false
     @State private var expandedAdditionalCategories: Set<NutrientCategory> = []
@@ -67,13 +66,6 @@ struct DashboardView: View {
                 }
             }
             .navigationTitle("Nutrition Tracker")
-            .toolbar {
-                ToolbarItem(placement: .topBarTrailing) {
-                    Button("Sign Out") {
-                        authViewModel.signOut()
-                    }
-                }
-            }
             .onChange(of: showAllNutrientsExpanded) { isExpanded in
                 if !isExpanded {
                     expandedAdditionalCategories.removeAll()

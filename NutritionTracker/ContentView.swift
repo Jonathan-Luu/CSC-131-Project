@@ -24,13 +24,9 @@ struct ContentView: View {
                         .tabItem {
                             Label("Goals", systemImage: "target")
                         }
-                    RecommendationsView()
+                    MoreView()
                         .tabItem {
-                            Label("Suggestions", systemImage: "lightbulb")
-                        }
-                    BMRCalculatorView()
-                        .tabItem {
-                            Label("BMR", systemImage: "figure.walk")
+                            Label("More", systemImage: "ellipsis.circle")
                         }
                 }
             } else {

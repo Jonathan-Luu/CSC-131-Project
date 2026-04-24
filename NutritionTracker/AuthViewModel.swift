@@ -29,6 +29,10 @@ final class AuthViewModel: ObservableObject {
         currentUser != nil
     }
 
+    var currentEmail: String {
+        currentUser?.email ?? "Unknown account"
+    }
+
     func submit() async {
         email = email.trimmingCharacters(in: .whitespacesAndNewlines)
 
@@ -64,8 +68,55 @@ final class AuthViewModel: ObservableObject {
         do {
             try Auth.auth().signOut()
             password = ""
+            errorMessage = nil
         } catch {
             errorMessage = Self.describe(error)
+        }
+    }
+
+    func clearError() {
+        errorMessage = nil
+    }
+
+    func changePassword(currentPassword: String, newPassword: String, confirmPassword: String) async -> Bool {
+        guard let user = currentUser, let email = user.email else {
+            errorMessage = "No signed-in account was found."
+            return false
+        }
+
+        guard !currentPassword.isEmpty else {
+            errorMessage = "Enter your current password."
+            return false
+        }
+
+        guard newPassword.count >= 6 else {
+            errorMessage = "New password must be at least 6 characters."
+            return false
+        }
+
+        guard newPassword == confirmPassword else {
+            errorMessage = "New passwords do not match."
+            return false
+        }
+
+        guard newPassword != currentPassword else {
+            errorMessage = "Choose a new password that is different from your current password."
+            return false
+        }
+
+        isLoading = true
+        errorMessage = nil
+
+        do {
+            let credential = EmailAuthProvider.credential(withEmail: email, password: currentPassword)
+            try await user.reauthenticate(with: credential)
+            try await user.updatePassword(to: newPassword)
+            isLoading = false
+            return true
+        } catch {
+            isLoading = false
+            errorMessage = Self.describe(error)
+            return false
         }
     }
 
@@ -78,6 +129,8 @@ final class AuthViewModel: ObservableObject {
                 return "That email address is not valid."
             case .wrongPassword:
                 return "That password is incorrect."
+            case .requiresRecentLogin:
+                return "Please sign in again before changing your password."
             case .userNotFound:
                 return "No account was found for that email."
             case .emailAlreadyInUse:
