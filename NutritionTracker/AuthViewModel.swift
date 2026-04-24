@@ -58,7 +58,9 @@ final class AuthViewModel: ObservableObject {
 
             password = ""
         } catch {
-            errorMessage = Self.describe(error)
+            errorMessage = isCreatingAccount
+                ? Self.describe(error, context: .accountCreation)
+                : Self.describe(error, context: .signIn)
         }
 
         isLoading = false
@@ -70,7 +72,7 @@ final class AuthViewModel: ObservableObject {
             password = ""
             errorMessage = nil
         } catch {
-            errorMessage = Self.describe(error)
+            errorMessage = Self.describe(error, context: .general)
         }
     }
 
@@ -115,12 +117,19 @@ final class AuthViewModel: ObservableObject {
             return true
         } catch {
             isLoading = false
-            errorMessage = Self.describe(error)
+            errorMessage = Self.describe(error, context: .passwordChange)
             return false
         }
     }
 
-    private static func describe(_ error: Error) -> String {
+    private enum ErrorContext {
+        case general
+        case signIn
+        case accountCreation
+        case passwordChange
+    }
+
+    private static func describe(_ error: Error, context: ErrorContext) -> String {
         let nsError = error as NSError
 
         if let authCode = AuthErrorCode(rawValue: nsError.code) {
@@ -128,34 +137,50 @@ final class AuthViewModel: ObservableObject {
             case .invalidEmail:
                 return "That email address is not valid."
             case .wrongPassword:
-                return "That password is incorrect."
+                return context == .passwordChange ? "Your current password is incorrect." : "That password is incorrect."
+            case .invalidCredential, .invalidLoginCredentials:
+                return context == .passwordChange ? "Your current password is incorrect." : "Your email or password is incorrect."
             case .requiresRecentLogin:
-                return "Please sign in again before changing your password."
+                return context == .passwordChange
+                    ? "Please sign out and sign back in before changing your password."
+                    : "Please sign in again and try one more time."
             case .userNotFound:
                 return "No account was found for that email."
             case .emailAlreadyInUse:
                 return "That email is already attached to an account."
             case .weakPassword:
-                return "That password is too weak."
+                return context == .passwordChange
+                    ? "Your new password is too weak. Choose a stronger password."
+                    : "That password is too weak."
             case .networkError:
-                return "Firebase could not reach the network. Check your connection and try again."
+                return "We couldn't reach the network. Check your connection and try again."
             case .operationNotAllowed:
                 return "Email/password sign-in is not enabled in Firebase yet."
             default:
                 break
             }
 
-            let detail = nsError.userInfo[NSLocalizedFailureReasonErrorKey] as? String
-                ?? nsError.userInfo[NSUnderlyingErrorKey].map { String(describing: $0) }
-                ?? nsError.localizedFailureReason
-
-            if let detail, !detail.isEmpty {
-                return "Firebase auth error (\(authCode.rawValue)): \(detail)"
+            switch context {
+            case .passwordChange:
+                return "We couldn't change your password right now. Please try again."
+            case .signIn:
+                return "We couldn't sign you in. Please check your details and try again."
+            case .accountCreation:
+                return "We couldn't create your account right now. Please try again."
+            case .general:
+                return "Something went wrong. Please try again."
             }
-
-            return "Firebase auth error (\(authCode.rawValue)): \(nsError.localizedDescription)"
         }
 
-        return nsError.localizedDescription
+        switch context {
+        case .passwordChange:
+            return "We couldn't change your password right now. Please try again."
+        case .signIn:
+            return "We couldn't sign you in. Please try again."
+        case .accountCreation:
+            return "We couldn't create your account right now. Please try again."
+        case .general:
+            return "Something went wrong. Please try again."
+        }
     }
 }
