@@ -27,9 +27,10 @@ struct ContentView: View {
                         .tabItem {
                             Label("Suggestions", systemImage: "lightbulb")
                         }
-                    BMRCalculatorView()
+
+                    MoreView()
                         .tabItem {
-                            Label("BMR", systemImage: "figure.walk")
+                            Label("More", systemImage: "ellipsis.circle")
                         }
                 }
             } else {
