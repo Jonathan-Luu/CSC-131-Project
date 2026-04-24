@@ -138,7 +138,7 @@ final class AuthViewModel: ObservableObject {
                 return "That email address is not valid."
             case .wrongPassword:
                 return context == .passwordChange ? "Your current password is incorrect." : "That password is incorrect."
-            case .invalidCredential, .invalidLoginCredentials:
+            case .invalidCredential:
                 return context == .passwordChange ? "Your current password is incorrect." : "Your email or password is incorrect."
             case .requiresRecentLogin:
                 return context == .passwordChange
