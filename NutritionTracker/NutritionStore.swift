@@ -256,9 +256,9 @@ final class NutritionStore: ObservableObject {
 
             let decoder = JSONDecoder()
 
-            let goalData = (data["goal"] as? Blob)?.data
-            let entriesData = (data["entries"] as? Blob)?.data
-            let profileData = (data["profile"] as? Blob)?.data
+            let goalData = (data["goal"] as? FirebaseFirestore.Blob)?.data
+            let entriesData = (data["entries"] as? FirebaseFirestore.Blob)?.data
+            let profileData = (data["profile"] as? FirebaseFirestore.Blob)?.data
 
             self.isApplyingRemote = true
             if let goalData, let g = try? decoder.decode(NutritionGoal.self, from: goalData) {
@@ -304,9 +304,9 @@ final class NutritionStore: ObservableObject {
 
         doc.setData(
             [
-                "goal": Blob(goalData),
-                "entries": Blob(entriesData),
-                "profile": Blob(profileData),
+                "goal": FirebaseFirestore.Blob(goalData),
+                "entries": FirebaseFirestore.Blob(entriesData),
+                "profile": FirebaseFirestore.Blob(profileData),
                 "updatedAt": FieldValue.serverTimestamp(),
             ],
             merge: true
