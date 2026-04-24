@@ -111,6 +111,7 @@ struct BMRCalculatorView: View {
                     return
                 }
                 store.profile.weightKg = clamped * lbToKg
+                store.profile.lastWeightLb = clamped
             }
             .onChange(of: heightFeet) { newValue in
                 if newValue < 0 {
@@ -153,16 +154,31 @@ struct BMRCalculatorView: View {
 
     private func syncUIFromProfile() {
         sex = store.profile.isMale ? .male : .female
-        weightLb = min(max(store.profile.weightKg / lbToKg, 0), maxWeightLb)
-        store.profile.weightKg = weightLb * lbToKg
+        if let saved = store.profile.lastWeightLb {
+            weightLb = min(max(saved, 0), maxWeightLb)
+            store.profile.weightKg = weightLb * lbToKg
+        } else {
+            weightLb = min(max(store.profile.weightKg / lbToKg, 0), maxWeightLb)
+            store.profile.weightKg = weightLb * lbToKg
+            store.profile.lastWeightLb = weightLb
+        }
 
-        let totalInches = max(0, Int((store.profile.heightCm / inchToCm).rounded()))
-        let maxTotalInches = maxHeightFeet * 12 + maxHeightInches
-        let clampedTotalInches = min(totalInches, maxTotalInches)
+        if let feet = store.profile.lastHeightFeet, let inches = store.profile.lastHeightInches {
+            heightFeet = min(max(feet, 0), maxHeightFeet)
+            let maxInches = (heightFeet >= maxHeightFeet) ? maxHeightInches : 11
+            heightInches = min(max(inches, 0), maxInches)
+            syncProfileHeightFromUI()
+        } else {
+            let totalInches = max(0, Int((store.profile.heightCm / inchToCm).rounded()))
+            let maxTotalInches = maxHeightFeet * 12 + maxHeightInches
+            let clampedTotalInches = min(totalInches, maxTotalInches)
 
-        heightFeet = clampedTotalInches / 12
-        heightInches = clampedTotalInches % 12
-        store.profile.heightCm = Double(clampedTotalInches) * inchToCm
+            heightFeet = clampedTotalInches / 12
+            heightInches = clampedTotalInches % 12
+            store.profile.heightCm = Double(clampedTotalInches) * inchToCm
+            store.profile.lastHeightFeet = heightFeet
+            store.profile.lastHeightInches = heightInches
+        }
     }
 
     private func syncProfileHeightFromUI() {
@@ -170,6 +186,8 @@ struct BMRCalculatorView: View {
         let inches = min(max(heightInches, 0), 11)
         let totalInches = feet * 12 + inches
         store.profile.heightCm = Double(totalInches) * inchToCm
+        store.profile.lastHeightFeet = feet
+        store.profile.lastHeightInches = inches
     }
 
     private var activityReferenceText: String {

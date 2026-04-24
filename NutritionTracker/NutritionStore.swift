@@ -21,6 +21,7 @@ final class NutritionStore: ObservableObject {
     private var firestoreListener: ListenerRegistration?
     private var isApplyingRemote = false
     private var pendingCloudWrite: DispatchWorkItem?
+    private var hasLoadedRemoteOnce = false
 
     private let recommendationPool: [RecommendedFood] = [
         RecommendedFood(name: "Greek Yogurt (1 cup)", nutrients: [1008: 130, 1003: 23, 1253: 15]),
@@ -51,6 +52,7 @@ final class NutritionStore: ObservableObject {
         firestoreListener = nil
 
         self.uid = uid
+        hasLoadedRemoteOnce = false
 
         // Signed-out state should not show the previous user's data.
         guard let uid, !uid.isEmpty else {
@@ -101,8 +103,9 @@ final class NutritionStore: ObservableObject {
         isApplyingRemote = false
 
         startFirestoreListener(uid: uid)
-        // Kick an initial write so first-time sign-ins push local data to the cloud.
-        scheduleCloudWrite()
+        // Note: we intentionally do NOT write immediately on sign-in.
+        // We wait until we have either loaded the cloud state or confirmed it doesn't exist,
+        // so we don't accidentally overwrite existing cloud history with an empty local cache.
     }
 
     func addFood(name: String, nutrients: [Int: Double]) {
@@ -207,7 +210,7 @@ final class NutritionStore: ObservableObject {
         Self.saveObject(entries, forKey: entriesKey, defaults: defaults)
         Self.saveObject(profile, forKey: profileKey, defaults: defaults)
 
-        if !isApplyingRemote {
+        if !isApplyingRemote, hasLoadedRemoteOnce {
             scheduleCloudWrite()
         }
     }
@@ -288,7 +291,21 @@ final class NutritionStore: ObservableObject {
         firestoreListener = doc.addSnapshotListener { [weak self] snapshot, error in
             guard let self else { return }
             guard error == nil else { return }
-            guard let data = snapshot?.data(), !data.isEmpty else { return }
+            guard let snapshot else { return }
+
+            // If no cloud doc exists yet, mark as loaded and (if we have local data) push it up once.
+            if !snapshot.exists {
+                self.hasLoadedRemoteOnce = true
+                if !self.entries.isEmpty || self.goal != .default || self.profile != .default {
+                    self.scheduleCloudWrite()
+                }
+                return
+            }
+
+            guard let data = snapshot.data(), !data.isEmpty else {
+                self.hasLoadedRemoteOnce = true
+                return
+            }
 
             self.isApplyingRemote = true
             if let goalMap = data["goal"] as? [String: Any],
@@ -307,10 +324,11 @@ final class NutritionStore: ObservableObject {
                 self.goal = NutritionGoal(targets: targets)
             }
 
-            if let entriesAny = data["entries"] as? [[String: Any]] {
+            if let entriesRaw = data["entries"] as? [Any] {
                 var decoded: [FoodEntry] = []
-                decoded.reserveCapacity(entriesAny.count)
-                for entryMap in entriesAny {
+                decoded.reserveCapacity(entriesRaw.count)
+                for raw in entriesRaw {
+                    guard let entryMap = raw as? [String: Any] else { continue }
                     guard
                         let idString = entryMap["id"] as? String,
                         let id = UUID(uuidString: idString),
@@ -355,15 +373,22 @@ final class NutritionStore: ObservableObject {
                 let activityMultiplier = (profileMap["activityMultiplier"] as? NSNumber)?.doubleValue
                     ?? (profileMap["activityMultiplier"] as? Double)
                     ?? UserProfile.default.activityMultiplier
+                let lastWeightLb = (profileMap["lastWeightLb"] as? NSNumber)?.doubleValue ?? (profileMap["lastWeightLb"] as? Double)
+                let lastHeightFeet = (profileMap["lastHeightFeet"] as? NSNumber)?.intValue ?? (profileMap["lastHeightFeet"] as? Int)
+                let lastHeightInches = (profileMap["lastHeightInches"] as? NSNumber)?.intValue ?? (profileMap["lastHeightInches"] as? Int)
                 self.profile = UserProfile(
                     age: age,
                     weightKg: weightKg,
                     heightCm: heightCm,
                     isMale: isMale,
-                    activityMultiplier: activityMultiplier
+                    activityMultiplier: activityMultiplier,
+                    lastWeightLb: lastWeightLb,
+                    lastHeightFeet: lastHeightFeet,
+                    lastHeightInches: lastHeightInches
                 )
             }
             self.isApplyingRemote = false
+            self.hasLoadedRemoteOnce = true
         }
     }
 
@@ -407,6 +432,9 @@ final class NutritionStore: ObservableObject {
                     "heightCm": profile.heightCm,
                     "isMale": profile.isMale,
                     "activityMultiplier": profile.activityMultiplier,
+                    "lastWeightLb": profile.lastWeightLb as Any,
+                    "lastHeightFeet": profile.lastHeightFeet as Any,
+                    "lastHeightInches": profile.lastHeightInches as Any,
                 ],
                 "updatedAt": FieldValue.serverTimestamp(),
             ],

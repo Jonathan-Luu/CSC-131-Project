@@ -67,13 +67,21 @@ struct UserProfile: Codable {
     var heightCm: Double
     var isMale: Bool
     var activityMultiplier: Double
+    /// Persisted UI inputs from the BMR screen (so users see what they typed).
+    /// These are redundant with metric fields but avoid rounding drift.
+    var lastWeightLb: Double?
+    var lastHeightFeet: Int?
+    var lastHeightInches: Int?
 
     static let `default` = UserProfile(
         age: 25,
         weightKg: 70,
         heightCm: 175,
         isMale: true,
-        activityMultiplier: 1.2
+        activityMultiplier: 1.2,
+        lastWeightLb: nil,
+        lastHeightFeet: nil,
+        lastHeightInches: nil
     )
 }
 
