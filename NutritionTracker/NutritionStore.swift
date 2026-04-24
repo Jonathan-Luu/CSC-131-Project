@@ -211,6 +211,11 @@ final class NutritionStore: ObservableObject {
     }
 
     private func persist() {
+        // When we're switching users or applying cloud data, `goal/entries/profile` are
+        // temporarily set programmatically. We must not persist those intermediate values
+        // or we can overwrite a user's cached data with defaults/empties.
+        if isApplyingRemote { return }
+
         ensureUserIsCurrent()
         let goalKey = scopedKey(Self.goalKey, uid: uid)
         let entriesKey = scopedKey(Self.entriesKey, uid: uid)
