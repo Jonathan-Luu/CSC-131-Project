@@ -859,7 +859,7 @@ struct AddFoodView: View {
 
         guard nutrients[1008] != nil else { return }
 
-        store.addFood(name: "TheMealDB: \(detail.strMeal) (\(servingsRaw) servings)", nutrients: nutrients)
+        store.addFood(name: "\(detail.strMeal) (\(servingsRaw) servings)", nutrients: nutrients)
         selectedMealDetail = nil
     }
 
