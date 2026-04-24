@@ -2,6 +2,7 @@ import SwiftUI
 
 struct ContentView: View {
     @EnvironmentObject private var authViewModel: AuthViewModel
+    @EnvironmentObject private var store: NutritionStore
 
     var body: some View {
         Group {
@@ -35,6 +36,12 @@ struct ContentView: View {
             } else {
                 LoginView()
             }
+        }
+        .onAppear {
+            store.setUser(uid: authViewModel.currentUser?.uid)
+        }
+        .onChange(of: authViewModel.currentUser?.uid) { newUid in
+            store.setUser(uid: newUid)
         }
     }
 }

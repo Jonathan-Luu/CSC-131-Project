@@ -1,4 +1,5 @@
 import Foundation
+import FirebaseFirestore
 
 final class NutritionStore: ObservableObject {
     @Published var goal: NutritionGoal {
@@ -16,6 +17,11 @@ final class NutritionStore: ObservableObject {
     private static let entriesKey = "nutrition.entries"
     private static let profileKey = "nutrition.profile"
 
+    private var uid: String?
+    private var firestoreListener: ListenerRegistration?
+    private var isApplyingRemote = false
+    private var pendingCloudWrite: DispatchWorkItem?
+
     private let recommendationPool: [RecommendedFood] = [
         RecommendedFood(name: "Greek Yogurt (1 cup)", nutrients: [1008: 130, 1003: 23, 1253: 15]),
         RecommendedFood(name: "Chicken Breast (100g)", nutrients: [1008: 165, 1003: 31, 1253: 85]),
@@ -28,9 +34,39 @@ final class NutritionStore: ObservableObject {
     ]
 
     init() {
-        self.goal = Self.loadGoal()
+        self.goal = Self.loadGoal(forKey: Self.goalKey)
         self.entries = Self.loadObject(forKey: Self.entriesKey, defaultValue: [])
         self.profile = Self.loadObject(forKey: Self.profileKey, defaultValue: .default)
+    }
+
+    /// Call when Firebase auth user changes so nutrition data is stored per account
+    /// and synced across devices.
+    func setUser(uid: String?) {
+        if self.uid == uid { return }
+
+        pendingCloudWrite?.cancel()
+        pendingCloudWrite = nil
+
+        firestoreListener?.remove()
+        firestoreListener = nil
+
+        self.uid = uid
+
+        // Load local cache for this account (or fall back to the legacy global keys).
+        let goalKey = scopedKey(Self.goalKey, uid: uid)
+        let entriesKey = scopedKey(Self.entriesKey, uid: uid)
+        let profileKey = scopedKey(Self.profileKey, uid: uid)
+
+        isApplyingRemote = true
+        self.goal = Self.loadGoal(forKey: goalKey, legacyKey: Self.goalKey)
+        self.entries = Self.loadObject(forKey: entriesKey, legacyKey: Self.entriesKey, defaultValue: [])
+        self.profile = Self.loadObject(forKey: profileKey, legacyKey: Self.profileKey, defaultValue: .default)
+        isApplyingRemote = false
+
+        guard let uid else { return }
+        startFirestoreListener(uid: uid)
+        // Kick an initial write so first-time sign-ins push local data to the cloud.
+        scheduleCloudWrite()
     }
 
     func addFood(name: String, nutrients: [Int: Double]) {
@@ -127,17 +163,46 @@ final class NutritionStore: ObservableObject {
     }
 
     private func persist() {
-        Self.saveObject(goal, forKey: Self.goalKey, defaults: defaults)
-        Self.saveObject(entries, forKey: Self.entriesKey, defaults: defaults)
-        Self.saveObject(profile, forKey: Self.profileKey, defaults: defaults)
+        let goalKey = scopedKey(Self.goalKey, uid: uid)
+        let entriesKey = scopedKey(Self.entriesKey, uid: uid)
+        let profileKey = scopedKey(Self.profileKey, uid: uid)
+
+        Self.saveObject(goal, forKey: goalKey, defaults: defaults)
+        Self.saveObject(entries, forKey: entriesKey, defaults: defaults)
+        Self.saveObject(profile, forKey: profileKey, defaults: defaults)
+
+        if !isApplyingRemote {
+            scheduleCloudWrite()
+        }
     }
 
-    private static func loadGoal() -> NutritionGoal {
-        guard let data = UserDefaults.standard.data(forKey: Self.goalKey) else {
-            return .default
-        }
-        if let g = try? JSONDecoder().decode(NutritionGoal.self, from: data) {
+    private static func loadGoal(forKey key: String, legacyKey: String? = nil) -> NutritionGoal {
+        if let data = UserDefaults.standard.data(forKey: key),
+           let g = try? JSONDecoder().decode(NutritionGoal.self, from: data) {
             return g
+        }
+
+        if let legacyKey,
+           let data = UserDefaults.standard.data(forKey: legacyKey) {
+            if let g = try? JSONDecoder().decode(NutritionGoal.self, from: data) {
+                return g
+            }
+            struct LegacyGoal: Codable {
+                let calories: Double
+                let protein: Double
+                let cholesterol: Double
+            }
+            if let legacy = try? JSONDecoder().decode(LegacyGoal.self, from: data) {
+                var t = NutrientCatalog.defaultGoals
+                t[1008] = legacy.calories
+                t[1003] = legacy.protein
+                t[1253] = legacy.cholesterol
+                return NutritionGoal(targets: t)
+            }
+        }
+
+        guard let data = UserDefaults.standard.data(forKey: key) else {
+            return .default
         }
         struct LegacyGoal: Codable {
             let calories: Double
@@ -154,13 +219,97 @@ final class NutritionStore: ObservableObject {
         return .default
     }
 
-    private static func loadObject<T: Codable>(forKey key: String, defaultValue: T) -> T {
-        guard let data = UserDefaults.standard.data(forKey: key) else { return defaultValue }
-        return (try? JSONDecoder().decode(T.self, from: data)) ?? defaultValue
+    private static func loadObject<T: Codable>(forKey key: String, legacyKey: String? = nil, defaultValue: T) -> T {
+        if let data = UserDefaults.standard.data(forKey: key),
+           let v = try? JSONDecoder().decode(T.self, from: data) {
+            return v
+        }
+        if let legacyKey,
+           let data = UserDefaults.standard.data(forKey: legacyKey),
+           let v = try? JSONDecoder().decode(T.self, from: data) {
+            return v
+        }
+        return defaultValue
     }
 
     private static func saveObject<T: Codable>(_ value: T, forKey key: String, defaults: UserDefaults) {
         guard let data = try? JSONEncoder().encode(value) else { return }
         defaults.set(data, forKey: key)
+    }
+
+    private func scopedKey(_ base: String, uid: String?) -> String {
+        guard let uid, !uid.isEmpty else { return base }
+        return "\(base).\(uid)"
+    }
+
+    private func startFirestoreListener(uid: String) {
+        let doc = Firestore.firestore()
+            .collection("users")
+            .document(uid)
+            .collection("nutrition")
+            .document("state")
+
+        firestoreListener = doc.addSnapshotListener { [weak self] snapshot, error in
+            guard let self else { return }
+            guard error == nil else { return }
+            guard let data = snapshot?.data(), !data.isEmpty else { return }
+
+            let decoder = JSONDecoder()
+
+            let goalData = (data["goal"] as? Blob)?.data
+            let entriesData = (data["entries"] as? Blob)?.data
+            let profileData = (data["profile"] as? Blob)?.data
+
+            self.isApplyingRemote = true
+            if let goalData, let g = try? decoder.decode(NutritionGoal.self, from: goalData) {
+                self.goal = g
+            }
+            if let entriesData, let e = try? decoder.decode([FoodEntry].self, from: entriesData) {
+                self.entries = e
+            }
+            if let profileData, let p = try? decoder.decode(UserProfile.self, from: profileData) {
+                self.profile = p
+            }
+            self.isApplyingRemote = false
+        }
+    }
+
+    private func scheduleCloudWrite() {
+        guard let uid, !uid.isEmpty else { return }
+
+        pendingCloudWrite?.cancel()
+        let work = DispatchWorkItem { [weak self] in
+            self?.writeToCloud()
+        }
+        pendingCloudWrite = work
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.6, execute: work)
+    }
+
+    private func writeToCloud() {
+        guard let uid, !uid.isEmpty else { return }
+        if isApplyingRemote { return }
+
+        let doc = Firestore.firestore()
+            .collection("users")
+            .document(uid)
+            .collection("nutrition")
+            .document("state")
+
+        let encoder = JSONEncoder()
+        guard
+            let goalData = try? encoder.encode(goal),
+            let entriesData = try? encoder.encode(entries),
+            let profileData = try? encoder.encode(profile)
+        else { return }
+
+        doc.setData(
+            [
+                "goal": Blob(goalData),
+                "entries": Blob(entriesData),
+                "profile": Blob(profileData),
+                "updatedAt": FieldValue.serverTimestamp(),
+            ],
+            merge: true
+        )
     }
 }
