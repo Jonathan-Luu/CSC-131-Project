@@ -254,21 +254,78 @@ final class NutritionStore: ObservableObject {
             guard error == nil else { return }
             guard let data = snapshot?.data(), !data.isEmpty else { return }
 
-            let decoder = JSONDecoder()
-
-            let goalData = (data["goal"] as? FirebaseFirestore.Blob)?.data
-            let entriesData = (data["entries"] as? FirebaseFirestore.Blob)?.data
-            let profileData = (data["profile"] as? FirebaseFirestore.Blob)?.data
-
             self.isApplyingRemote = true
-            if let goalData, let g = try? decoder.decode(NutritionGoal.self, from: goalData) {
-                self.goal = g
+            if let goalMap = data["goal"] as? [String: Any],
+               let targetsMap = goalMap["targets"] as? [String: Any] {
+                var targets: [Int: Double] = [:]
+                for (k, vAny) in targetsMap {
+                    guard let id = Int(k) else { continue }
+                    if let v = vAny as? Double {
+                        targets[id] = v
+                    } else if let v = vAny as? Int {
+                        targets[id] = Double(v)
+                    } else if let v = vAny as? NSNumber {
+                        targets[id] = v.doubleValue
+                    }
+                }
+                self.goal = NutritionGoal(targets: targets)
             }
-            if let entriesData, let e = try? decoder.decode([FoodEntry].self, from: entriesData) {
-                self.entries = e
+
+            if let entriesAny = data["entries"] as? [[String: Any]] {
+                var decoded: [FoodEntry] = []
+                decoded.reserveCapacity(entriesAny.count)
+                for entryMap in entriesAny {
+                    guard
+                        let idString = entryMap["id"] as? String,
+                        let id = UUID(uuidString: idString),
+                        let name = entryMap["name"] as? String
+                    else { continue }
+
+                    let date: Date
+                    if let ts = entryMap["date"] as? Timestamp {
+                        date = ts.dateValue()
+                    } else if let d = entryMap["date"] as? Date {
+                        date = d
+                    } else {
+                        date = Date()
+                    }
+
+                    var nutrients: [Int: Double] = [:]
+                    if let nutrientMap = entryMap["nutrients"] as? [String: Any] {
+                        for (k, vAny) in nutrientMap {
+                            guard let nid = Int(k) else { continue }
+                            if let v = vAny as? Double {
+                                nutrients[nid] = v
+                            } else if let v = vAny as? Int {
+                                nutrients[nid] = Double(v)
+                            } else if let v = vAny as? NSNumber {
+                                nutrients[nid] = v.doubleValue
+                            }
+                        }
+                    }
+
+                    decoded.append(FoodEntry(id: id, name: name, nutrients: nutrients, date: date))
+                }
+                // Keep same ordering semantics as local (most recent first) if cloud isn't ordered.
+                decoded.sort(by: { $0.date > $1.date })
+                self.entries = decoded
             }
-            if let profileData, let p = try? decoder.decode(UserProfile.self, from: profileData) {
-                self.profile = p
+
+            if let profileMap = data["profile"] as? [String: Any] {
+                let age = (profileMap["age"] as? NSNumber)?.intValue ?? (profileMap["age"] as? Int) ?? UserProfile.default.age
+                let weightKg = (profileMap["weightKg"] as? NSNumber)?.doubleValue ?? (profileMap["weightKg"] as? Double) ?? UserProfile.default.weightKg
+                let heightCm = (profileMap["heightCm"] as? NSNumber)?.doubleValue ?? (profileMap["heightCm"] as? Double) ?? UserProfile.default.heightCm
+                let isMale = (profileMap["isMale"] as? Bool) ?? UserProfile.default.isMale
+                let activityMultiplier = (profileMap["activityMultiplier"] as? NSNumber)?.doubleValue
+                    ?? (profileMap["activityMultiplier"] as? Double)
+                    ?? UserProfile.default.activityMultiplier
+                self.profile = UserProfile(
+                    age: age,
+                    weightKg: weightKg,
+                    heightCm: heightCm,
+                    isMale: isMale,
+                    activityMultiplier: activityMultiplier
+                )
             }
             self.isApplyingRemote = false
         }
@@ -295,18 +352,26 @@ final class NutritionStore: ObservableObject {
             .collection("nutrition")
             .document("state")
 
-        let encoder = JSONEncoder()
-        guard
-            let goalData = try? encoder.encode(goal),
-            let entriesData = try? encoder.encode(entries),
-            let profileData = try? encoder.encode(profile)
-        else { return }
-
         doc.setData(
             [
-                "goal": FirebaseFirestore.Blob(goalData),
-                "entries": FirebaseFirestore.Blob(entriesData),
-                "profile": FirebaseFirestore.Blob(profileData),
+                "goal": [
+                    "targets": Dictionary(uniqueKeysWithValues: goal.targets.map { (String($0.key), $0.value) }),
+                ],
+                "entries": entries.map { e in
+                    [
+                        "id": e.id.uuidString,
+                        "name": e.name,
+                        "date": Timestamp(date: e.date),
+                        "nutrients": Dictionary(uniqueKeysWithValues: e.nutrients.map { (String($0.key), $0.value) }),
+                    ] as [String: Any]
+                },
+                "profile": [
+                    "age": profile.age,
+                    "weightKg": profile.weightKg,
+                    "heightCm": profile.heightCm,
+                    "isMale": profile.isMale,
+                    "activityMultiplier": profile.activityMultiplier,
+                ],
                 "updatedAt": FieldValue.serverTimestamp(),
             ],
             merge: true
