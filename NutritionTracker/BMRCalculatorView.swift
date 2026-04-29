@@ -11,13 +11,13 @@ struct BMRCalculatorView: View {
     }
 
     @State private var sex: Sex = .male
+    @State private var ageText = ""
     @State private var weightLb: Double = 0
     @State private var heightFeet: Int = 0
     @State private var heightInches: Int = 0
     @State private var ageLimitMessage: String?
     @State private var weightLimitMessage: String?
     @State private var heightLimitMessage: String?
-    @State private var isApplyingAgeLimit = false
     @State private var isApplyingWeightLimit = false
     @State private var heightLimitAdjustmentCount = 0
     @FocusState private var focusedField: Field?
@@ -45,7 +45,7 @@ struct BMRCalculatorView: View {
                     HStack {
                         Text("Age")
                         Spacer()
-                        TextField("Age", value: $store.profile.age, format: .number)
+                        TextField("Age", text: $ageText)
                             .keyboardType(.numberPad)
                             .multilineTextAlignment(.trailing)
                             .frame(width: 80)
@@ -142,23 +142,23 @@ struct BMRCalculatorView: View {
             }
             .onChange(of: focusedField) { newValue in
                 if newValue == nil {
-                    clearLimitMessages()
+                    finishEditingProfileFields()
                 }
             }
-            .onChange(of: store.profile.age) { newValue in
-                if isApplyingAgeLimit {
-                    isApplyingAgeLimit = false
+            .onChange(of: ageText) { newValue in
+                guard let age = Int(newValue.trimmingCharacters(in: .whitespacesAndNewlines)) else {
+                    ageLimitMessage = nil
                     return
                 }
 
-                let clamped = min(max(newValue, ageRange.lowerBound), ageRange.upperBound)
-                if clamped != newValue {
+                let clamped = min(max(age, ageRange.lowerBound), ageRange.upperBound)
+                if clamped != age {
                     ageLimitMessage = ageLimitWarning
-                    isApplyingAgeLimit = true
                     store.profile.age = clamped
                     return
                 }
                 ageLimitMessage = nil
+                store.profile.age = age
             }
             .onChange(of: weightLb) { newValue in
                 if isApplyingWeightLimit {
@@ -242,6 +242,7 @@ struct BMRCalculatorView: View {
 
     private func syncUIFromProfile() {
         sex = store.profile.isMale ? .male : .female
+        ageText = "\(store.profile.age)"
         if let saved = store.profile.lastWeightLb {
             weightLb = min(max(saved, 0), maxWeightLb)
             store.profile.weightKg = weightLb * lbToKg
@@ -282,6 +283,11 @@ struct BMRCalculatorView: View {
         ageLimitMessage = nil
         weightLimitMessage = nil
         heightLimitMessage = nil
+    }
+
+    private func finishEditingProfileFields() {
+        ageText = "\(store.profile.age)"
+        clearLimitMessages()
     }
 
     private var ageLimitWarning: String {
