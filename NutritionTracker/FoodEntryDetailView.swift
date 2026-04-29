@@ -3,7 +3,9 @@ import SwiftUI
 /// Nutrient breakdown for a logged `FoodEntry`, shown from history (sheet pattern matches `AddFoodView` portion flow).
 struct FoodEntryDetailView: View {
     let entry: FoodEntry
+    @EnvironmentObject private var store: NutritionStore
     @Environment(\.dismiss) private var dismiss
+    @State private var didAddAgain = false
 
     private static let macroNutrientIds: [Int] = [1008, 1003, 1005, 1004]
     private static let macroIdSet = Set(macroNutrientIds)
@@ -20,6 +22,19 @@ struct FoodEntryDetailView: View {
                         .font(.body)
                     LabeledContent("Logged") {
                         Text(entry.date.formatted(date: .abbreviated, time: .shortened))
+                    }
+                }
+
+                Section {
+                    Button("Add Again Today") {
+                        store.addFood(name: entry.name, nutrients: entry.nutrients)
+                        didAddAgain = true
+                    }
+
+                    if didAddAgain {
+                        Text("Added to today's log.")
+                            .font(.footnote)
+                            .foregroundStyle(.secondary)
                     }
                 }
 
