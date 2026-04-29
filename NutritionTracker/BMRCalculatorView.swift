@@ -18,10 +18,19 @@ struct BMRCalculatorView: View {
     @State private var heightLimitMessage: String?
     @State private var isApplyingWeightLimit = false
     @State private var heightLimitAdjustmentCount = 0
+    @FocusState private var focusedField: Field?
+
+    private enum Field {
+        case age
+        case weight
+        case heightFeet
+        case heightInches
+    }
 
     private let maxWeightLb = 2000.0
     private let maxHeightFeet = 10
     private let maxHeightInches = 11
+    private let defaultWeightLb = 150.0
 
     private let lbToKg = 0.45359237
     private let inchToCm = 2.54
@@ -37,15 +46,17 @@ struct BMRCalculatorView: View {
                             .keyboardType(.numberPad)
                             .multilineTextAlignment(.trailing)
                             .frame(width: 80)
+                            .focused($focusedField, equals: .age)
                     }
 
                     HStack {
                         Text("Weight (lb)")
                         Spacer()
-                        TextField("Weight", value: $weightLb, format: .number)
+                        TextField("Weight", value: $weightLb, format: .number.precision(.fractionLength(0...1)))
                             .keyboardType(.decimalPad)
                             .multilineTextAlignment(.trailing)
                             .frame(width: 80)
+                            .focused($focusedField, equals: .weight)
                     }
                     if let weightLimitMessage {
                         Text(weightLimitMessage)
@@ -62,6 +73,7 @@ struct BMRCalculatorView: View {
                                     .keyboardType(.numberPad)
                                     .multilineTextAlignment(.trailing)
                                     .frame(width: 44)
+                                    .focused($focusedField, equals: .heightFeet)
                                 Text("ft")
                                     .foregroundStyle(.secondary)
                             }
@@ -71,6 +83,7 @@ struct BMRCalculatorView: View {
                                     .keyboardType(.numberPad)
                                     .multilineTextAlignment(.trailing)
                                     .frame(width: 44)
+                                    .focused($focusedField, equals: .heightInches)
                                 Text("in")
                                     .foregroundStyle(.secondary)
                             }
@@ -112,6 +125,14 @@ struct BMRCalculatorView: View {
                 }
             }
             .navigationTitle("BMR Calculator")
+            .toolbar {
+                ToolbarItemGroup(placement: .keyboard) {
+                    Spacer()
+                    Button("Done") {
+                        focusedField = nil
+                    }
+                }
+            }
             .onAppear {
                 syncUIFromProfile()
             }
@@ -211,7 +232,7 @@ struct BMRCalculatorView: View {
             weightLb = min(max(saved, 0), maxWeightLb)
             store.profile.weightKg = weightLb * lbToKg
         } else {
-            weightLb = min(max(store.profile.weightKg / lbToKg, 0), maxWeightLb)
+            weightLb = defaultWeightLb
             store.profile.weightKg = weightLb * lbToKg
             store.profile.lastWeightLb = weightLb
         }
