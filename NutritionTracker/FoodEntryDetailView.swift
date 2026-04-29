@@ -29,7 +29,7 @@ struct FoodEntryDetailView: View {
                 Section {
                     Button("Add Again Today") {
                         if isAddAgainCoolingDown {
-                            addAgainMessage = "Please wait 1 second"
+                            addAgainMessage = "Please wait a second."
                             return
                         }
 
@@ -72,22 +72,6 @@ struct FoodEntryDetailView: View {
                         }
                     }
                 }
-
-                /* let unknownIds = entry.nutrients.keys.filter { !trackedIdSet.contains($0) }.sorted()
-                if !unknownIds.isEmpty {
-                    Section("Other nutrients") {
-                        ForEach(unknownIds, id: \.self) { id in
-                            if let value = entry.nutrients[id] {
-                                HStack {
-                                    Text("Nutrient ID \(id)")
-                                    Spacer()
-                                    Text(format(value))
-                                        .foregroundStyle(.secondary)
-                                }
-                            }
-                        }
-                    }
-                } */
             }
             .navigationTitle("Details")
             .navigationBarTitleDisplayMode(.inline)
