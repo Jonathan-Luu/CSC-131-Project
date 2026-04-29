@@ -7,7 +7,7 @@ struct AddFoodView: View {
     private enum Mode: String, CaseIterable {
         case manual = "Manual"
         case usda = "Lookup Food"
-        case mealdb = "TheMealDB"
+        case mealdb = "Lookup Meals"
     }
 
     @State private var mode: Mode = .manual
@@ -147,7 +147,7 @@ struct AddFoodView: View {
         }
     }
 
-    @State private var mealDBQuery = "Arrabiata"
+    @State private var mealDBQuery = ""
     @State private var mealDBResults: [MealDBMeal] = []
     @State private var isMealDBLoading = false
     @State private var mealDBError: String?
@@ -348,11 +348,11 @@ struct AddFoodView: View {
 
     private var mealDBSection: some View {
         List {
-            Section("Search TheMealDB") {
+            Section("Search meals") {
                 TextField("Search meals", text: $mealDBQuery)
                     .textInputAutocapitalization(.never)
                     .autocorrectionDisabled()
-
+                
                 Button(isMealDBLoading ? "Searching…" : "Search") {
                     Task { await searchMealDB() }
                 }

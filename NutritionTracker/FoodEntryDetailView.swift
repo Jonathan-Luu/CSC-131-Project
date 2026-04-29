@@ -44,7 +44,7 @@ struct FoodEntryDetailView: View {
                     }
                 }
 
-                let unknownIds = entry.nutrients.keys.filter { !trackedIdSet.contains($0) }.sorted()
+                /* let unknownIds = entry.nutrients.keys.filter { !trackedIdSet.contains($0) }.sorted()
                 if !unknownIds.isEmpty {
                     Section("Other nutrients") {
                         ForEach(unknownIds, id: \.self) { id in
@@ -58,7 +58,7 @@ struct FoodEntryDetailView: View {
                             }
                         }
                     }
-                }
+                } */
             }
             .navigationTitle("Details")
             .navigationBarTitleDisplayMode(.inline)
