@@ -133,15 +133,7 @@ struct BMRCalculatorView: View {
                 }
             }
             .navigationTitle("BMR Calculator")
-            .toolbar {
-                ToolbarItemGroup(placement: .keyboard) {
-                    Spacer()
-                    Button("Done") {
-                        focusedField = nil
-                        clearLimitMessages()
-                    }
-                }
-            }
+            .scrollDismissesKeyboard(.interactively)
             .onAppear {
                 syncUIFromProfile()
             }

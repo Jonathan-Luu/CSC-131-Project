@@ -16,6 +16,7 @@ struct AddGoalView: View {
             nutrientSelectionSection
         }
         .navigationTitle("Add Goal")
+        .scrollDismissesKeyboard(.interactively)
         .searchable(text: $searchText, prompt: "Search nutrients")
         .onChange(of: searchText) { _ in
             expandRelevantCategories()

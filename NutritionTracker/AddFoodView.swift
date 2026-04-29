@@ -344,6 +344,7 @@ struct AddFoodView: View {
                 }
             }
         }
+        .scrollDismissesKeyboard(.interactively)
     }
 
     private var mealDBSection: some View {
@@ -414,6 +415,7 @@ struct AddFoodView: View {
                 }
             }
         }
+        .scrollDismissesKeyboard(.interactively)
         .onSubmit(of: .text) {
             Task { await searchMealDB() }
         }
@@ -535,6 +537,7 @@ struct AddFoodView: View {
                         }
                     }
                 }
+                .scrollDismissesKeyboard(.interactively)
             }
         }
     }
@@ -647,6 +650,7 @@ struct AddFoodView: View {
                     }
                 }
             }
+            .scrollDismissesKeyboard(.interactively)
             .navigationTitle("Amount")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
@@ -810,6 +814,7 @@ struct AddFoodView: View {
                     .disabled(isMealDBDetailLoading || isMealDBNutritionComputing || foodDatabase.isLoading)
                 }
             }
+            .scrollDismissesKeyboard(.interactively)
             .navigationTitle("Add Meal")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {

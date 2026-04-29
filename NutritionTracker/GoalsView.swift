@@ -49,6 +49,7 @@ struct GoalsView: View {
                 }
             }
             .navigationTitle("Goals")
+            .scrollDismissesKeyboard(.interactively)
             .onAppear {
                 syncFromStore()
             }

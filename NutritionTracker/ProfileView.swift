@@ -80,6 +80,7 @@ struct ProfileView: View {
             }
         }
         .navigationTitle("Profile")
+        .scrollDismissesKeyboard(.interactively)
         .onChange(of: currentPassword) { _ in clearMessages() }
         .onChange(of: newPassword) { _ in clearMessages() }
         .onChange(of: confirmPassword) { _ in clearMessages() }
