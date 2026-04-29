@@ -14,6 +14,10 @@ struct BMRCalculatorView: View {
     @State private var weightLb: Double = 0
     @State private var heightFeet: Int = 0
     @State private var heightInches: Int = 0
+    @State private var weightLimitMessage: String?
+    @State private var heightLimitMessage: String?
+    @State private var isApplyingWeightLimit = false
+    @State private var heightLimitAdjustmentCount = 0
 
     private let maxWeightLb = 2000.0
     private let maxHeightFeet = 10
@@ -43,6 +47,11 @@ struct BMRCalculatorView: View {
                             .multilineTextAlignment(.trailing)
                             .frame(width: 80)
                     }
+                    if let weightLimitMessage {
+                        Text(weightLimitMessage)
+                            .font(.footnote)
+                            .foregroundStyle(.red)
+                    }
 
                     HStack {
                         Text("Height")
@@ -66,6 +75,11 @@ struct BMRCalculatorView: View {
                                     .foregroundStyle(.secondary)
                             }
                         }
+                    }
+                    if let heightLimitMessage {
+                        Text(heightLimitMessage)
+                            .font(.footnote)
+                            .foregroundStyle(.red)
                     }
 
                     Picker("Sex", selection: $sex) {
@@ -105,34 +119,73 @@ struct BMRCalculatorView: View {
                 store.profile.isMale = (newValue == .male)
             }
             .onChange(of: weightLb) { newValue in
+                if isApplyingWeightLimit {
+                    isApplyingWeightLimit = false
+                    return
+                }
+
                 let clamped = min(max(newValue, 0), maxWeightLb)
                 if clamped != newValue {
+                    weightLimitMessage = weightLimitWarning
+                    store.profile.weightKg = clamped * lbToKg
+                    store.profile.lastWeightLb = clamped
+                    isApplyingWeightLimit = true
                     weightLb = clamped
                     return
                 }
+                weightLimitMessage = nil
                 store.profile.weightKg = clamped * lbToKg
                 store.profile.lastWeightLb = clamped
             }
             .onChange(of: heightFeet) { newValue in
+                if heightLimitAdjustmentCount > 0 {
+                    heightLimitAdjustmentCount -= 1
+                    syncProfileHeightFromUI()
+                    return
+                }
+
                 if newValue < 0 {
+                    heightLimitMessage = heightLimitWarning
+                    if heightFeet != 0 {
+                        heightLimitAdjustmentCount += 1
+                    }
                     heightFeet = 0
                     return
                 }
                 if newValue > maxHeightFeet {
+                    heightLimitMessage = heightLimitWarning
+                    if heightFeet != maxHeightFeet {
+                        heightLimitAdjustmentCount += 1
+                    }
+                    if heightInches != maxHeightInches {
+                        heightLimitAdjustmentCount += 1
+                    }
                     heightFeet = maxHeightFeet
                     heightInches = maxHeightInches
                     syncProfileHeightFromUI()
                     return
                 }
+                heightLimitMessage = nil
                 syncProfileHeightFromUI()
             }
             .onChange(of: heightInches) { newValue in
+                if heightLimitAdjustmentCount > 0 {
+                    heightLimitAdjustmentCount -= 1
+                    syncProfileHeightFromUI()
+                    return
+                }
+
                 let maxInches = (heightFeet >= maxHeightFeet) ? maxHeightInches : 11
                 let clamped = min(max(newValue, 0), maxInches)
                 if clamped != newValue {
+                    heightLimitMessage = heightLimitWarning
+                    if heightInches != clamped {
+                        heightLimitAdjustmentCount += 1
+                    }
                     heightInches = clamped
                     return
                 }
+                heightLimitMessage = nil
                 syncProfileHeightFromUI()
             }
         }
@@ -188,6 +241,14 @@ struct BMRCalculatorView: View {
         store.profile.heightCm = Double(totalInches) * inchToCm
         store.profile.lastHeightFeet = feet
         store.profile.lastHeightInches = inches
+    }
+
+    private var weightLimitWarning: String {
+        "Please enter a weight within 0-\(String(format: "%.0f", maxWeightLb)) lb."
+    }
+
+    private var heightLimitWarning: String {
+        "Please enter a height within 0 ft 0 in-\(maxHeightFeet) ft \(maxHeightInches) in."
     }
 
     private var activityReferenceText: String {
