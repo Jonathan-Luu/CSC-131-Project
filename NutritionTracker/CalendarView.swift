@@ -4,6 +4,7 @@ struct CalendarView: View {
     @Binding var displayedMonth: Date
     var selectedDate: Date?
     var entryDays: Set<Date>
+    var goalMetDays: Set<Date> = []
     var minMonth: Date
     var maxMonth: Date
     var today: Date
@@ -88,6 +89,7 @@ struct CalendarView: View {
     private func dayCell(for date: Date) -> some View {
         let isSelected = selectedDate.map { $0.isSameDay(as: date) } ?? false
         let hasEntries = entryDays.contains(date.startOfDay)
+        let metGoal = goalMetDays.contains(date.startOfDay)
 
         let isInFuture = date.startOfDay > today.startOfDay
         let isDisabled = isInFuture
@@ -96,20 +98,30 @@ struct CalendarView: View {
             onSelectDay(date.startOfDay)
         } label: {
             ZStack {
-                if isSelected {
+                if metGoal {
+                    Circle()
+                        .fill(Color.green.opacity(isSelected ? 0.28 : 0.20))
+                        .frame(width: 36, height: 36)
+                } else if isSelected {
                     Circle()
                         .fill(Color.accentColor.opacity(0.18))
                         .frame(width: 36, height: 36)
                 }
 
+                if isSelected && metGoal {
+                    Circle()
+                        .stroke(Color.green, lineWidth: 1.5)
+                        .frame(width: 36, height: 36)
+                }
+
                 Text("\(calendar.component(.day, from: date))")
                     .font(.subheadline)
-                    .foregroundStyle(isDisabled ? .tertiary : .primary)
+                    .foregroundStyle(dayTextStyle(isDisabled: isDisabled, metGoal: metGoal))
                     .frame(width: 36, height: 36)
 
                 if hasEntries {
                     Circle()
-                        .fill(isSelected ? Color.accentColor : Color.primary.opacity(0.65))
+                        .fill(entryDotColor(isSelected: isSelected, metGoal: metGoal))
                         .frame(width: 5, height: 5)
                         .offset(y: 14)
                         .accessibilityHidden(true)
@@ -119,7 +131,18 @@ struct CalendarView: View {
         }
         .buttonStyle(.plain)
         .disabled(isDisabled)
-        .accessibilityLabel(accessibilityLabel(for: date, hasEntries: hasEntries, isDisabled: isDisabled))
+        .accessibilityLabel(accessibilityLabel(for: date, hasEntries: hasEntries, metGoal: metGoal, isDisabled: isDisabled))
+    }
+
+    private func dayTextStyle(isDisabled: Bool, metGoal: Bool) -> Color {
+        if isDisabled { return Color(.tertiaryLabel) }
+        if metGoal { return .green }
+        return .primary
+    }
+
+    private func entryDotColor(isSelected: Bool, metGoal: Bool) -> Color {
+        if metGoal { return .green }
+        return isSelected ? Color.accentColor : Color.primary.opacity(0.65)
     }
 
     private var weekdaySymbols: [String] {
@@ -167,13 +190,14 @@ struct CalendarView: View {
         return f.string(from: date)
     }
 
-    private func accessibilityLabel(for date: Date, hasEntries: Bool, isDisabled: Bool) -> String {
+    private func accessibilityLabel(for date: Date, hasEntries: Bool, metGoal: Bool, isDisabled: Bool) -> String {
         let f = DateFormatter()
         f.calendar = calendar
         f.locale = .current
         f.dateStyle = .full
         let base = f.string(from: date)
         if isDisabled { return "\(base), future date" }
+        if metGoal { return "\(base), daily goals met" }
         return hasEntries ? "\(base), has entries" : base
     }
 }

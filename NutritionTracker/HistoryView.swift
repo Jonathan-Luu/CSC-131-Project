@@ -14,6 +14,7 @@ struct HistoryView: View {
                     displayedMonth: $displayedMonth,
                     selectedDate: selectedDay,
                     entryDays: entryDaysInLog,
+                    goalMetDays: goalMetDaysInLog,
                     minMonth: minMonth,
                     maxMonth: maxMonth,
                     today: today,
@@ -48,6 +49,15 @@ struct HistoryView: View {
                         .foregroundStyle(.secondary)
                         .padding(.horizontal)
                 }
+
+                ConsistencyTrackerView(
+                    percent: hasActiveGoals ? store.consistencyPercent : 0,
+                    metDays: metGoalDayCount,
+                    loggedDays: store.historyByDay.count,
+                    hasActiveGoals: hasActiveGoals
+                )
+                .padding(.horizontal)
+
                 Spacer(minLength: 0)
             }
             .navigationTitle("Food History")
@@ -74,6 +84,20 @@ struct HistoryView: View {
         Set(store.entries.map { $0.date.startOfDay })
     }
 
+    private var goalMetDaysInLog: Set<Date> {
+        guard hasActiveGoals else { return [] }
+        Set(store.historyByDay.filter(\.metGoal).map { $0.date.startOfDay })
+    }
+
+    private var metGoalDayCount: Int {
+        guard hasActiveGoals else { return 0 }
+        store.historyByDay.filter(\.metGoal).count
+    }
+
+    private var hasActiveGoals: Bool {
+        store.goal.targets.values.contains { $0 > 0 }
+    }
+
     private var today: Date { Date().startOfDay }
 
     private var minMonth: Date {
@@ -83,6 +107,77 @@ struct HistoryView: View {
     /// Future months are unavailable entirely.
     private var maxMonth: Date {
         today.startOfMonth
+    }
+}
+
+private struct ConsistencyTrackerView: View {
+    let percent: Double
+    let metDays: Int
+    let loggedDays: Int
+    let hasActiveGoals: Bool
+
+    private var progress: Double {
+        min(max(percent / 100, 0), 1)
+    }
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 10) {
+            HStack(alignment: .firstTextBaseline) {
+                VStack(alignment: .leading, spacing: 2) {
+                    Text("Goal Consistency")
+                        .font(.subheadline.weight(.semibold))
+                    Text(summaryText)
+                        .font(.caption)
+                        .foregroundStyle(.secondary)
+                }
+
+                Spacer(minLength: 12)
+
+                Text(percentText)
+                    .font(.title3.weight(.bold))
+                    .foregroundStyle(loggedDays == 0 || !hasActiveGoals ? Color.secondary : Color.green)
+            }
+
+            GeometryReader { proxy in
+                ZStack(alignment: .leading) {
+                    Capsule()
+                        .fill(Color(.secondarySystemBackground))
+                    Capsule()
+                        .fill(loggedDays == 0 || !hasActiveGoals ? Color.secondary.opacity(0.35) : Color.green)
+                        .frame(width: proxy.size.width * progress)
+                }
+            }
+            .frame(height: 8)
+            .accessibilityHidden(true)
+        }
+        .padding(14)
+        .background(Color(.systemBackground))
+        .clipShape(RoundedRectangle(cornerRadius: 12))
+        .overlay(
+            RoundedRectangle(cornerRadius: 12)
+                .stroke(Color(.separator), lineWidth: 0.5)
+        )
+        .accessibilityElement(children: .combine)
+        .accessibilityLabel("Goal consistency")
+        .accessibilityValue("\(percentText), \(summaryText)")
+    }
+
+    private var percentText: String {
+        guard loggedDays > 0, hasActiveGoals else { return "0%" }
+        return "\(Int(percent.rounded()))%"
+    }
+
+    private var summaryText: String {
+        guard hasActiveGoals else {
+            return "Add a daily goal to start tracking consistency."
+        }
+
+        guard loggedDays > 0 else {
+            return "Log food to start tracking your daily goal consistency."
+        }
+
+        let dayLabel = loggedDays == 1 ? "logged day" : "logged days"
+        return "\(metDays) of \(loggedDays) \(dayLabel) met"
     }
 }
 

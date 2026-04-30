@@ -82,7 +82,7 @@ struct NutrientCatalog {
             guard g > 0 else { continue }
             let v = totals[def.id] ?? 0
             if def.goalIsMaximum {
-                if v > g { return false }
+                continue
             } else {
                 if v < g { return false }
             }
