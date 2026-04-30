@@ -54,16 +54,7 @@ struct DashboardView: View {
                         Text("Show Untracked Nutrients")
                     }
                 }
-
-                Section("Goal Consistency") {
-                    HStack {
-                        Text("Days goals met")
-                        Spacer()
-                        Text("\(store.consistencyPercent, specifier: "%.1f")%")
-                            .fontWeight(.semibold)
-                    }
-                    ProgressView(value: store.consistencyPercent, total: 100)
-                }
+                
             }
             .navigationTitle("Nutrition Tracker")
             .onChange(of: showAllNutrientsExpanded) { isExpanded in
