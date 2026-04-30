@@ -80,6 +80,28 @@ final class AuthViewModel: ObservableObject {
         errorMessage = nil
     }
 
+    func sendPasswordReset(to emailAddress: String) async -> Bool {
+        let resetEmail = emailAddress.trimmingCharacters(in: .whitespacesAndNewlines)
+
+        guard !resetEmail.isEmpty else {
+            errorMessage = "Enter an email address."
+            return false
+        }
+
+        isLoading = true
+        errorMessage = nil
+
+        do {
+            try await Auth.auth().sendPasswordReset(withEmail: resetEmail)
+            isLoading = false
+            return true
+        } catch {
+            isLoading = false
+            errorMessage = Self.describe(error, context: .passwordReset)
+            return false
+        }
+    }
+
     func changePassword(currentPassword: String, newPassword: String, confirmPassword: String) async -> Bool {
         guard let user = currentUser, let email = user.email else {
             errorMessage = "No signed-in account was found."
@@ -126,6 +148,7 @@ final class AuthViewModel: ObservableObject {
         case general
         case signIn
         case accountCreation
+        case passwordReset
         case passwordChange
     }
 
@@ -137,13 +160,32 @@ final class AuthViewModel: ObservableObject {
             case .invalidEmail:
                 return "That email address is not valid."
             case .wrongPassword:
-                return context == .passwordChange ? "Your current password is incorrect." : "That password is incorrect."
+                switch context {
+                case .passwordChange:
+                    return "Your current password is incorrect."
+                case .passwordReset:
+                    return "We couldn't send a password reset email right now. Please try again."
+                default:
+                    return "That password is incorrect."
+                }
             case .invalidCredential:
-                return context == .passwordChange ? "Your current password is incorrect." : "Your email or password is incorrect."
+                switch context {
+                case .passwordChange:
+                    return "Your current password is incorrect."
+                case .passwordReset:
+                    return "We couldn't send a password reset email right now. Please try again."
+                default:
+                    return "Your email or password is incorrect."
+                }
             case .requiresRecentLogin:
-                return context == .passwordChange
-                    ? "Please sign out and sign back in before changing your password."
-                    : "Please sign in again and try one more time."
+                switch context {
+                case .passwordChange:
+                    return "Please sign out and sign back in before changing your password."
+                case .passwordReset:
+                    return "We couldn't send a password reset email right now. Please try again."
+                default:
+                    return "Please sign in again and try one more time."
+                }
             case .userNotFound:
                 return "No account was found for that email."
             case .emailAlreadyInUse:
@@ -161,6 +203,8 @@ final class AuthViewModel: ObservableObject {
             }
 
             switch context {
+            case .passwordReset:
+                return "We couldn't send a password reset email right now. Please try again."
             case .passwordChange:
                 return "We couldn't change your password right now. Please try again."
             case .signIn:
@@ -173,6 +217,8 @@ final class AuthViewModel: ObservableObject {
         }
 
         switch context {
+        case .passwordReset:
+            return "We couldn't send a password reset email right now. Please try again."
         case .passwordChange:
             return "We couldn't change your password right now. Please try again."
         case .signIn:
