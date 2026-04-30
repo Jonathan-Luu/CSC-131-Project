@@ -86,12 +86,12 @@ struct HistoryView: View {
 
     private var goalMetDaysInLog: Set<Date> {
         guard hasActiveGoals else { return [] }
-        Set(store.historyByDay.filter(\.metGoal).map { $0.date.startOfDay })
+        return Set(store.historyByDay.filter(\.metGoal).map { $0.date.startOfDay })
     }
 
     private var metGoalDayCount: Int {
         guard hasActiveGoals else { return 0 }
-        store.historyByDay.filter(\.metGoal).count
+        return store.historyByDay.filter(\.metGoal).count
     }
 
     private var hasActiveGoals: Bool {
