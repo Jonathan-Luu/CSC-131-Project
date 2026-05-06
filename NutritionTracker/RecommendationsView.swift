@@ -146,6 +146,117 @@ struct RecommendationsView: View {
         }
     }
 
+    private func mealAddSheet(for detail: TheMealDBClient.MealDetail) -> some View {
+        NavigationStack {
+            Form {
+                Section("Meal") {
+                    Text(detail.strMeal)
+                        .font(.body)
+                    if !detail.ingredientLines.isEmpty {
+                        Text(detail.ingredientLines.joined(separator: "\n"))
+                            .font(.footnote)
+                            .foregroundStyle(.secondary)
+                    }
+                }
+
+                Section("Servings") {
+                    TextField("Servings", text: $servingsText)
+                        .keyboardType(.decimalPad)
+                    Text("Serving counts are estimated (TheMealDB doesn’t provide them).")
+                        .font(.footnote)
+                        .foregroundStyle(.secondary)
+                    Text("We’ll estimate nutrition by matching ingredients to the USDA foundation database and scaling by servings.")
+                        .font(.footnote)
+                        .foregroundStyle(.secondary)
+                }
+
+                if showServingsValidation {
+                    Section {
+                        Text("Enter a valid servings amount (e.g. 1, 2, 0.5).")
+                            .foregroundStyle(.red)
+                            .font(.footnote)
+                    }
+                }
+
+                if let preview = computedPreviewText {
+                    Section("Estimated nutrition (total)") {
+                        Text(preview)
+                            .font(.footnote)
+                            .foregroundStyle(.secondary)
+                    }
+                }
+
+                Section {
+                    Button(isNutritionComputing ? "Calculating…" : "Add to log") {
+                        Task { await addDetailToLog(detail) }
+                    }
+                    .disabled(isNutritionComputing || foodDatabase.isLoading)
+                }
+            }
+            .scrollDismissesKeyboard(.interactively)
+            .navigationTitle("Add Meal")
+            .navigationBarTitleDisplayMode(.inline)
+            .toolbar {
+                ToolbarItem(placement: .cancellationAction) {
+                    Button("Cancel") {
+                        selectedMealDetail = nil
+                    }
+                }
+            }
+        }
+    }
+
+    @MainActor
+    private func addDetailToLog(_ detail: TheMealDBClient.MealDetail) async {
+        let servingsRaw = servingsText.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard let servings = Double(servingsRaw), servings > 0 else {
+            showServingsValidation = true
+            return
+        }
+        showServingsValidation = false
+
+        guard !foodDatabase.isLoading else {
+            computedPreviewText = "USDA database is still loading. Please try again in a moment."
+            return
+        }
+
+        isNutritionComputing = true
+        defer { isNutritionComputing = false }
+
+        // Estimator returns totals for the full recipe. Convert to per-serving using the
+        // same assumed serving count we used to display the recommendation.
+        let recipeTotals = MealDBNutritionEstimator.estimateNutrients(
+            detail: detail,
+            servings: 1.0,
+            foodDatabase: foodDatabase
+        )
+        let perServing = MealRecommendationsViewModel.divideNutrients(recipeTotals, by: selectedAssumedServingsPerRecipe)
+        var nutrients: [Int: Double] = [:]
+        nutrients.reserveCapacity(perServing.count)
+        for (k, v) in perServing {
+            nutrients[k] = v * servings
+        }
+
+        if let calories = nutrients[1008] {
+            let protein = nutrients[1003] ?? 0
+            let carbs = nutrients[1005] ?? 0
+            let fat = nutrients[1004] ?? 0
+            computedPreviewText = String(
+                format: "Calories: %.0f kcal\nProtein: %.1f g\nCarbs: %.1f g\nFat: %.1f g",
+                calories,
+                protein,
+                carbs,
+                fat
+            )
+        } else {
+            computedPreviewText = "Could not estimate calories from the ingredient matches."
+        }
+
+        guard nutrients[1008] != nil else { return }
+        store.addFood(name: "\(detail.strMeal) (\(servingsRaw) servings)", nutrients: nutrients)
+        selectedMealDetail = nil
+    }
+
     private func summaryLine(_ n: [Int: Double]) -> String {
         let c = n[1008].map { String(format: "%.0f kcal", $0) }
         let p = n[1003].map { String(format: "%.0f g protein", $0) }
