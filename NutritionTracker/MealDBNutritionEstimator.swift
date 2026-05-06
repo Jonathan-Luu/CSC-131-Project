@@ -2,8 +2,8 @@ import Foundation
 
 /// Shared estimator used by both Lookup Meal and Recommendations.
 /// Approach: match each MealDB ingredient to the USDA foundation database and sum scaled nutrients.
+@MainActor
 struct MealDBNutritionEstimator {
-    @MainActor
     static func estimateNutrients(
         detail: TheMealDBClient.MealDetail,
         servings: Double,
