@@ -21,7 +21,6 @@
 		A1B2C3D4E5F6000000000112 /* FoundationFoodDatabase.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1B2C3D4E5F6000000000213 /* FoundationFoodDatabase.swift */; };
 		A1B2C3D4E5F6000000000113 /* FoodData_Central_foundation_food_json_2025-12-18.json in Resources */ = {isa = PBXBuildFile; fileRef = A1B2C3D4E5F6000000000214 /* FoodData_Central_foundation_food_json_2025-12-18.json */; };
 		A1B2C3D4E5F6000000000114 /* NutrientNormalization.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1B2C3D4E5F6000000000215 /* NutrientNormalization.swift */; };
-		A1B2C3D4E5F6000000000115 /* FoodBrowseCategories.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1B2C3D4E5F6000000000216 /* FoodBrowseCategories.swift */; };
 		A1B2C3D4E5F6000000000116 /* FoodEntryDetailView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1B2C3D4E5F6000000000217 /* FoodEntryDetailView.swift */; };
 		A1B2C3D4E5F6000000000117 /* AddGoalView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1B2C3D4E5F6000000000218 /* AddGoalView.swift */; };
 		A1B2C3D4E5F6000000000118 /* CalendarView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1B2C3D4E5F6000000000219 /* CalendarView.swift */; };
@@ -56,7 +55,6 @@
 		A1B2C3D4E5F6000000000213 /* FoundationFoodDatabase.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FoundationFoodDatabase.swift; sourceTree = "<group>"; };
 		A1B2C3D4E5F6000000000214 /* FoodData_Central_foundation_food_json_2025-12-18.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = "FoodData_Central_foundation_food_json_2025-12-18.json"; sourceTree = "<group>"; };
 		A1B2C3D4E5F6000000000215 /* NutrientNormalization.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NutrientNormalization.swift; sourceTree = "<group>"; };
-		A1B2C3D4E5F6000000000216 /* FoodBrowseCategories.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FoodBrowseCategories.swift; sourceTree = "<group>"; };
 		A1B2C3D4E5F6000000000217 /* FoodEntryDetailView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FoodEntryDetailView.swift; sourceTree = "<group>"; };
 		A1B2C3D4E5F6000000000218 /* AddGoalView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AddGoalView.swift; sourceTree = "<group>"; };
 		A1B2C3D4E5F6000000000219 /* CalendarView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CalendarView.swift; sourceTree = "<group>"; };
@@ -113,7 +111,6 @@
 				A1B2C3D4E5F6000000000215 /* NutrientNormalization.swift */,
 				A1B2C3D4E5F6000000000204 /* NutritionStore.swift */,
 				A1B2C3D4E5F6000000000213 /* FoundationFoodDatabase.swift */,
-				A1B2C3D4E5F6000000000216 /* FoodBrowseCategories.swift */,
 				A1B2C3D4E5F6000000000205 /* DashboardView.swift */,
 				A1B2C3D4E5F6000000000206 /* AddFoodView.swift */,
 				A1B2C3D4E5F6000000000218 /* AddGoalView.swift */,
@@ -233,7 +230,6 @@
 				A1B2C3D4E5F6000000000114 /* NutrientNormalization.swift in Sources */,
 				A1B2C3D4E5F6000000000104 /* NutritionStore.swift in Sources */,
 				A1B2C3D4E5F6000000000112 /* FoundationFoodDatabase.swift in Sources */,
-				A1B2C3D4E5F6000000000115 /* FoodBrowseCategories.swift in Sources */,
 				A1B2C3D4E5F6000000000105 /* DashboardView.swift in Sources */,
 				A1B2C3D4E5F6000000000106 /* AddFoodView.swift in Sources */,
 				A1B2C3D4E5F6000000000117 /* AddGoalView.swift in Sources */,
