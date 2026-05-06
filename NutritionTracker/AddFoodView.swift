@@ -5,6 +5,8 @@ struct AddFoodView: View {
     @EnvironmentObject private var foodDatabase: FoundationFoodDatabase
 
     private enum Mode: String, CaseIterable {
+        static let allCases: [Mode] = [.manual, .mealdb]
+
         case manual = "Manual"
         case usda = "Lookup Food"
         case mealdb = "Lookup Meals"
