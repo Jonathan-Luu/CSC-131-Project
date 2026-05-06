@@ -12,7 +12,8 @@ struct MealDBAddMealSheet: View {
     @State private var showServingsValidation = false
     @State private var isNutritionComputing = false
     @State private var computedPreviewText: String?
-    @State private var assumedServingsPerRecipe: Double = 4
+    @State private var assumedServingsPerRecipe: Double?
+    @State private var recipeTotals: [Int: Double]?
 
     var body: some View {
         NavigationStack {
@@ -30,9 +31,15 @@ struct MealDBAddMealSheet: View {
                 Section("Servings") {
                     TextField("Servings", text: $servingsText)
                         .keyboardType(.decimalPad)
-                    Text("Serving counts are estimated (TheMealDB doesn’t provide them). Assumed recipe yield: \(format(assumedServingsPerRecipe)) servings.")
-                        .font(.footnote)
-                        .foregroundStyle(.secondary)
+                    if let assumed = assumedServingsPerRecipe {
+                        Text("Serving counts are estimated (TheMealDB doesn’t provide them). Assumed recipe yield: \(format(assumed)) servings.")
+                            .font(.footnote)
+                            .foregroundStyle(.secondary)
+                    } else {
+                        Text("Serving counts are estimated (TheMealDB doesn’t provide them).")
+                            .font(.footnote)
+                            .foregroundStyle(.secondary)
+                    }
                     Text("We’ll estimate nutrition by matching ingredients to the USDA foundation database and scaling by servings.")
                         .font(.footnote)
                         .foregroundStyle(.secondary)
@@ -73,18 +80,21 @@ struct MealDBAddMealSheet: View {
             }
             .onChange(of: servingsText) { _ in
                 showServingsValidation = false
+                Task { await recomputePreview() }
+            }
+            .task {
+                await recomputePreview()
             }
         }
     }
 
     @MainActor
-    private func addToLog() async {
+    private func recomputePreview() async {
         let servingsRaw = servingsText.trimmingCharacters(in: .whitespacesAndNewlines)
         guard let servings = Double(servingsRaw), servings > 0 else {
-            showServingsValidation = true
+            computedPreviewText = nil
             return
         }
-        showServingsValidation = false
 
         guard !foodDatabase.isLoading else {
             computedPreviewText = "USDA database is still loading. Please try again in a moment."
@@ -94,14 +104,18 @@ struct MealDBAddMealSheet: View {
         isNutritionComputing = true
         defer { isNutritionComputing = false }
 
-        let recipeTotals = MealDBNutritionEstimator.estimateNutrients(
-            detail: detail,
-            servings: 1.0,
-            foodDatabase: foodDatabase
-        )
-        let assumedServings = MealRecommendationsViewModel.estimateServingsPerRecipe(fromRecipeTotals: recipeTotals)
-        assumedServingsPerRecipe = assumedServings
-        let perServing = MealRecommendationsViewModel.divideNutrients(recipeTotals, by: assumedServings)
+        if recipeTotals == nil {
+            recipeTotals = MealDBNutritionEstimator.estimateNutrients(
+                detail: detail,
+                servings: 1.0,
+                foodDatabase: foodDatabase
+            )
+        }
+        guard let recipeTotals else { return }
+
+        let assumed = MealRecommendationsViewModel.estimateServingsPerRecipe(fromRecipeTotals: recipeTotals)
+        assumedServingsPerRecipe = assumed
+        let perServing = MealRecommendationsViewModel.divideNutrients(recipeTotals, by: assumed)
 
         var nutrients: [Int: Double] = [:]
         nutrients.reserveCapacity(perServing.count)
@@ -122,6 +136,34 @@ struct MealDBAddMealSheet: View {
             )
         } else {
             computedPreviewText = "Could not estimate calories from the ingredient matches."
+        }
+    }
+
+    @MainActor
+    private func addToLog() async {
+        let servingsRaw = servingsText.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard let servings = Double(servingsRaw), servings > 0 else {
+            showServingsValidation = true
+            return
+        }
+        showServingsValidation = false
+
+        guard !foodDatabase.isLoading else {
+            return
+        }
+
+        if recipeTotals == nil || assumedServingsPerRecipe == nil || computedPreviewText == nil {
+            await recomputePreview()
+        }
+        guard let recipeTotals else { return }
+
+        let assumed = assumedServingsPerRecipe ?? MealRecommendationsViewModel.estimateServingsPerRecipe(fromRecipeTotals: recipeTotals)
+        let perServing = MealRecommendationsViewModel.divideNutrients(recipeTotals, by: assumed)
+
+        var nutrients: [Int: Double] = [:]
+        nutrients.reserveCapacity(perServing.count)
+        for (k, v) in perServing {
+            nutrients[k] = v * servings
         }
 
         guard nutrients[1008] != nil else { return }
