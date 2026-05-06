@@ -7,6 +7,7 @@ struct RecommendationsView: View {
     @State private var isLookupLoading = false
     @State private var lookupError: String?
     @State private var selectedMealDetail: TheMealDBClient.MealDetail?
+    @State private var selectedAssumedServingsPerRecipe: Double = 4
     @State private var servingsText = "1"
     @State private var showServingsValidation = false
     @State private var isNutritionComputing = false
@@ -138,6 +139,7 @@ struct RecommendationsView: View {
         showServingsValidation = false
         isNutritionComputing = false
         computedPreviewText = nil
+        selectedAssumedServingsPerRecipe = rec.assumedServingsPerRecipe
 
         isLookupLoading = true
         defer { isLookupLoading = false }
@@ -166,6 +168,9 @@ struct RecommendationsView: View {
                 Section("Servings") {
                     TextField("Servings", text: $servingsText)
                         .keyboardType(.decimalPad)
+                    Text("Serving counts are estimated (TheMealDB doesn’t provide them). We assume this recipe makes \(format(selectedAssumedServingsPerRecipe)) servings.")
+                        .font(.footnote)
+                        .foregroundStyle(.secondary)
                     Text("We’ll estimate nutrition by matching ingredients to the USDA foundation database and scaling by servings.")
                         .font(.footnote)
                         .foregroundStyle(.secondary)
@@ -224,11 +229,19 @@ struct RecommendationsView: View {
         isNutritionComputing = true
         defer { isNutritionComputing = false }
 
-        let nutrients = MealDBNutritionEstimator.estimateNutrients(
+        // Estimator returns totals for the full recipe. Convert to per-serving using the
+        // same assumed serving count we used to display the recommendation.
+        let recipeTotals = MealDBNutritionEstimator.estimateNutrients(
             detail: detail,
-            servings: servings,
+            servings: 1.0,
             foodDatabase: foodDatabase
         )
+        let perServing = MealRecommendationsViewModel.divideNutrients(recipeTotals, by: selectedAssumedServingsPerRecipe)
+        var nutrients: [Int: Double] = [:]
+        nutrients.reserveCapacity(perServing.count)
+        for (k, v) in perServing {
+            nutrients[k] = v * servings
+        }
 
         if let calories = nutrients[1008] {
             let protein = nutrients[1003] ?? 0
