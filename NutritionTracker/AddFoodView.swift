@@ -286,7 +286,7 @@ struct AddFoodView: View {
                                 VStack(alignment: .leading, spacing: 4) {
                                     Text(meal.strMeal)
                                         .foregroundStyle(.primary)
-                                    Text("Tap to add with nutrition")
+                                    Text("Tap to add")
                                         .font(.caption)
                                         .foregroundStyle(.secondary)
                                 }

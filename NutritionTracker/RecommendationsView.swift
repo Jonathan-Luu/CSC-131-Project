@@ -75,10 +75,10 @@ struct RecommendationsView: View {
                                             Text(focusLine(rec))
                                                 .font(.caption)
                                                 .foregroundStyle(.secondary)
-                                            Text("Tap to add like Lookup Meals")
+                                            Text("Tap to add")
                                                 .font(.caption)
                                                 .foregroundStyle(.tertiary)
-                                            Text("Per serving (assumes \(format(rec.assumedServingsPerRecipe)) servings)")
+                                            Text("Per serving (Listed nutrition assumes \(format(rec.assumedServingsPerRecipe)) servings)")
                                                 .font(.caption)
                                                 .foregroundStyle(.tertiary)
                                         }
