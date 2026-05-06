@@ -42,37 +42,46 @@ struct RecommendationsView: View {
                             .foregroundStyle(.secondary)
                     } else {
                         ForEach(vm.recommendations) { rec in
-                            VStack(alignment: .leading, spacing: 6) {
-                                HStack(spacing: 12) {
-                                    if let url = rec.thumbURL {
-                                        AsyncImage(url: url) { image in
-                                            image.resizable().scaledToFill()
-                                        } placeholder: {
-                                            Color(.secondarySystemBackground)
-                                        }
-                                        .frame(width: 44, height: 44)
-                                        .clipShape(RoundedRectangle(cornerRadius: 10))
-                                    } else {
-                                        RoundedRectangle(cornerRadius: 10)
-                                            .fill(Color(.secondarySystemBackground))
+                            Button {
+                                store.addFood(name: "\(rec.name) (1 serving)", nutrients: rec.estimatedNutrientsPerServing)
+                            } label: {
+                                VStack(alignment: .leading, spacing: 6) {
+                                    HStack(spacing: 12) {
+                                        if let url = rec.thumbURL {
+                                            AsyncImage(url: url) { image in
+                                                image.resizable().scaledToFill()
+                                            } placeholder: {
+                                                Color(.secondarySystemBackground)
+                                            }
                                             .frame(width: 44, height: 44)
+                                            .clipShape(RoundedRectangle(cornerRadius: 10))
+                                        } else {
+                                            RoundedRectangle(cornerRadius: 10)
+                                                .fill(Color(.secondarySystemBackground))
+                                                .frame(width: 44, height: 44)
+                                        }
+
+                                        VStack(alignment: .leading, spacing: 2) {
+                                            Text(rec.name)
+                                                .font(.headline)
+                                                .foregroundStyle(.primary)
+                                            Text(focusLine(rec))
+                                                .font(.caption)
+                                                .foregroundStyle(.secondary)
+                                            Text("Tap to add 1 serving")
+                                                .font(.caption)
+                                                .foregroundStyle(.tertiary)
+                                        }
+                                        Spacer()
                                     }
 
-                                    VStack(alignment: .leading, spacing: 2) {
-                                        Text(rec.name)
-                                            .font(.headline)
-                                        Text(focusLine(rec))
-                                            .font(.caption)
-                                            .foregroundStyle(.secondary)
-                                    }
-                                    Spacer()
+                                    Text(summaryLine(rec.estimatedNutrientsPerServing))
+                                        .font(.subheadline)
+                                        .foregroundStyle(.secondary)
                                 }
-
-                                Text(summaryLine(rec.estimatedNutrients))
-                                    .font(.subheadline)
-                                    .foregroundStyle(.secondary)
+                                .padding(.vertical, 2)
                             }
-                            .padding(.vertical, 2)
+                            .buttonStyle(.plain)
                         }
                     }
                 }

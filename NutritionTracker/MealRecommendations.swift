@@ -6,8 +6,8 @@ struct MealRecommendation: Identifiable, Hashable {
     let thumbURL: URL?
     /// The nutrients this recommendation was primarily chosen to help satisfy.
     let focusNutrientIds: [Int]
-    /// Estimated nutrient totals for a single recipe serving selection.
-    let estimatedNutrients: [Int: Double]
+    /// Estimated nutrient totals **per 1 serving**.
+    let estimatedNutrientsPerServing: [Int: Double]
 }
 
 /// Recommends TheMealDB meals based on which nutrition goals the user is currently missing.
@@ -19,6 +19,8 @@ final class MealRecommendationsViewModel: ObservableObject {
     @Published var focusDeficits: [(nutrientId: Int, deficit: Double)] = []
 
     private let client = TheMealDBClient()
+    /// TheMealDB does not provide serving size/count; we use a consistent default.
+    private let assumedServingsPerRecipe: Double = 4.0
 
     func refresh(store: NutritionStore, foodDatabase: FoundationFoodDatabase) async {
         errorMessage = nil
@@ -93,12 +95,13 @@ final class MealRecommendationsViewModel: ObservableObject {
 
         for meal in mealMap.values.prefix(30) {
             let detail = try await client.lookupMealDetail(idMeal: meal.idMeal)
-            let nutrients = estimateMealNutrients(detail: detail, servings: 1.0, foodDatabase: foodDatabase)
+            let recipeTotals = estimateMealNutrients(detail: detail, servings: 1.0, foodDatabase: foodDatabase)
+            let perServing = Self.divideNutrients(recipeTotals, by: assumedServingsPerRecipe)
 
             var score: Double = 0
             for (nutrientId, deficit) in deficits {
                 guard deficit > 0 else { continue }
-                let v = nutrients[nutrientId] ?? 0
+                let v = perServing[nutrientId] ?? 0
                 if v <= 0 { continue }
                 let coverage = min(v / deficit, 1.0)
                 score += (deficitWeights[nutrientId] ?? 0) * coverage
@@ -107,7 +110,7 @@ final class MealRecommendationsViewModel: ObservableObject {
             // Small penalty if the user is already over some "maximum" goals (cholesterol/sodium/fat).
             var penalty: Double = 0
             for (id, over) in maxOverages where over > 0 {
-                let v = nutrients[id] ?? 0
+                let v = perServing[id] ?? 0
                 penalty += v * 0.0005
             }
             score -= penalty
@@ -118,7 +121,7 @@ final class MealRecommendationsViewModel: ObservableObject {
                 name: meal.strMeal,
                 thumbURL: meal.strMealThumb.flatMap(URL.init(string:)),
                 focusNutrientIds: focusIds,
-                estimatedNutrients: nutrients
+                estimatedNutrientsPerServing: perServing
             )
             scored.append((rec, score))
         }
@@ -191,6 +194,16 @@ final class MealRecommendationsViewModel: ObservableObject {
             // Generic balanced options.
             return ["chicken", "beans", "spinach"]
         }
+    }
+
+    static func divideNutrients(_ nutrients: [Int: Double], by divisor: Double) -> [Int: Double] {
+        guard divisor > 0 else { return nutrients }
+        var out: [Int: Double] = [:]
+        out.reserveCapacity(nutrients.count)
+        for (k, v) in nutrients {
+            out[k] = v / divisor
+        }
+        return out
     }
 
     // MARK: - Meal nutrition estimation (ingredient → USDA match → scaled totals)
