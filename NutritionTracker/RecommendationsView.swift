@@ -4,6 +4,13 @@ struct RecommendationsView: View {
     @EnvironmentObject private var store: NutritionStore
     @EnvironmentObject private var foodDatabase: FoundationFoodDatabase
     @StateObject private var vm = MealRecommendationsViewModel()
+    @State private var isLookupLoading = false
+    @State private var lookupError: String?
+    @State private var selectedMealDetail: TheMealDBClient.MealDetail?
+    @State private var servingsText = "1"
+    @State private var showServingsValidation = false
+    @State private var isNutritionComputing = false
+    @State private var computedPreviewText: String?
 
     var body: some View {
         NavigationStack {
@@ -43,7 +50,7 @@ struct RecommendationsView: View {
                     } else {
                         ForEach(vm.recommendations) { rec in
                             Button {
-                                store.addFood(name: "\(rec.name) (1 serving)", nutrients: rec.estimatedNutrientsPerServing)
+                                Task { await openLookup(for: rec) }
                             } label: {
                                 VStack(alignment: .leading, spacing: 6) {
                                     HStack(spacing: 12) {
@@ -68,7 +75,7 @@ struct RecommendationsView: View {
                                             Text(focusLine(rec))
                                                 .font(.caption)
                                                 .foregroundStyle(.secondary)
-                                            Text("Tap to add 1 serving")
+                                            Text("Tap to add like Lookup Meals")
                                                 .font(.caption)
                                                 .foregroundStyle(.tertiary)
                                         }
@@ -95,12 +102,149 @@ struct RecommendationsView: View {
                     .disabled(vm.isLoading)
                 }
             }
+            .overlay {
+                if isLookupLoading {
+                    ProgressView()
+                        .padding(12)
+                        .background(.thinMaterial, in: RoundedRectangle(cornerRadius: 12))
+                }
+            }
             .task {
                 if vm.recommendations.isEmpty, !vm.isLoading {
                     await vm.refresh(store: store, foodDatabase: foodDatabase)
                 }
             }
+            .alert("Meal Lookup Error", isPresented: Binding(get: { lookupError != nil }, set: { _ in lookupError = nil })) {
+                Button("OK", role: .cancel) {}
+            } message: {
+                Text(lookupError ?? "")
+            }
+            .sheet(item: $selectedMealDetail) { detail in
+                mealAddSheet(for: detail)
+            }
         }
+    }
+
+    @MainActor
+    private func openLookup(for rec: MealRecommendation) async {
+        guard !isLookupLoading else { return }
+        lookupError = nil
+
+        // Reset sheet state each time.
+        servingsText = "1"
+        showServingsValidation = false
+        isNutritionComputing = false
+        computedPreviewText = nil
+
+        isLookupLoading = true
+        defer { isLookupLoading = false }
+
+        do {
+            let detail = try await TheMealDBClient().lookupMealDetail(idMeal: rec.id)
+            selectedMealDetail = detail
+        } catch {
+            lookupError = error.localizedDescription
+        }
+    }
+
+    private func mealAddSheet(for detail: TheMealDBClient.MealDetail) -> some View {
+        NavigationStack {
+            Form {
+                Section("Meal") {
+                    Text(detail.strMeal)
+                        .font(.body)
+                    if !detail.ingredientLines.isEmpty {
+                        Text(detail.ingredientLines.joined(separator: "\n"))
+                            .font(.footnote)
+                            .foregroundStyle(.secondary)
+                    }
+                }
+
+                Section("Servings") {
+                    TextField("Servings", text: $servingsText)
+                        .keyboardType(.decimalPad)
+                    Text("We’ll estimate nutrition by matching ingredients to the USDA foundation database and scaling by servings.")
+                        .font(.footnote)
+                        .foregroundStyle(.secondary)
+                }
+
+                if showServingsValidation {
+                    Section {
+                        Text("Enter a valid servings amount (e.g. 1, 2, 0.5).")
+                            .foregroundStyle(.red)
+                            .font(.footnote)
+                    }
+                }
+
+                if let preview = computedPreviewText {
+                    Section("Estimated nutrition (total)") {
+                        Text(preview)
+                            .font(.footnote)
+                            .foregroundStyle(.secondary)
+                    }
+                }
+
+                Section {
+                    Button(isNutritionComputing ? "Calculating…" : "Add to log") {
+                        Task { await addDetailToLog(detail) }
+                    }
+                    .disabled(isNutritionComputing || foodDatabase.isLoading)
+                }
+            }
+            .scrollDismissesKeyboard(.interactively)
+            .navigationTitle("Add Meal")
+            .navigationBarTitleDisplayMode(.inline)
+            .toolbar {
+                ToolbarItem(placement: .cancellationAction) {
+                    Button("Cancel") {
+                        selectedMealDetail = nil
+                    }
+                }
+            }
+        }
+    }
+
+    @MainActor
+    private func addDetailToLog(_ detail: TheMealDBClient.MealDetail) async {
+        let servingsRaw = servingsText.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard let servings = Double(servingsRaw), servings > 0 else {
+            showServingsValidation = true
+            return
+        }
+        showServingsValidation = false
+
+        guard !foodDatabase.isLoading else {
+            computedPreviewText = "USDA database is still loading. Please try again in a moment."
+            return
+        }
+
+        isNutritionComputing = true
+        defer { isNutritionComputing = false }
+
+        let nutrients = MealDBNutritionEstimator.estimateNutrients(
+            detail: detail,
+            servings: servings,
+            foodDatabase: foodDatabase
+        )
+
+        if let calories = nutrients[1008] {
+            let protein = nutrients[1003] ?? 0
+            let carbs = nutrients[1005] ?? 0
+            let fat = nutrients[1004] ?? 0
+            computedPreviewText = String(
+                format: "Calories: %.0f kcal\nProtein: %.1f g\nCarbs: %.1f g\nFat: %.1f g",
+                calories,
+                protein,
+                carbs,
+                fat
+            )
+        } else {
+            computedPreviewText = "Could not estimate calories from the ingredient matches."
+        }
+
+        guard nutrients[1008] != nil else { return }
+        store.addFood(name: "\(detail.strMeal) (\(servingsRaw) servings)", nutrients: nutrients)
+        selectedMealDetail = nil
     }
 
     private func summaryLine(_ n: [Int: Double]) -> String {

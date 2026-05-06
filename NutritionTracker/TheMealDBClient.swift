@@ -60,6 +60,14 @@ struct TheMealDBClient {
 
         var id: String { idMeal }
 
+        var ingredientLines: [String] {
+            ingredientPairs.map { ing, measure in
+                let m = measure.trimmingCharacters(in: .whitespacesAndNewlines)
+                if m.isEmpty { return ing }
+                return "\(m) \(ing)"
+            }
+        }
+
         var ingredientPairs: [(ingredient: String, measure: String)] {
             let ingredients: [String?] = [
                 strIngredient1, strIngredient2, strIngredient3, strIngredient4, strIngredient5,
