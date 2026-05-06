@@ -78,7 +78,7 @@ struct RecommendationsView: View {
                                             Text("Tap to add")
                                                 .font(.caption)
                                                 .foregroundStyle(.tertiary)
-                                            Text("Per serving (Listed nutrition assumes \(format(rec.assumedServingsPerRecipe)) servings)")
+                                            Text("Listed nutrition assumes \(format(rec.assumedServingsPerRecipe)) servings")
                                                 .font(.caption)
                                                 .foregroundStyle(.tertiary)
                                         }
