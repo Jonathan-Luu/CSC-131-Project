@@ -40,6 +40,7 @@
 		0501A1B2C3D4000000000501 /* TheMealDBClient.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0401A1B2C3D4000000000401 /* TheMealDBClient.swift */; };
 		0502A1B2C3D4000000000502 /* MealRecommendations.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0402A1B2C3D4000000000402 /* MealRecommendations.swift */; };
 		0503A1B2C3D4000000000503 /* MealDBNutritionEstimator.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0403A1B2C3D4000000000403 /* MealDBNutritionEstimator.swift */; };
+		0504A1B2C3D4000000000504 /* MealDBAddMealSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0404A1B2C3D4000000000404 /* MealDBAddMealSheet.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -74,6 +75,7 @@
 		0401A1B2C3D4000000000401 /* TheMealDBClient.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TheMealDBClient.swift; sourceTree = "<group>"; };
 		0402A1B2C3D4000000000402 /* MealRecommendations.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MealRecommendations.swift; sourceTree = "<group>"; };
 		0403A1B2C3D4000000000403 /* MealDBNutritionEstimator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MealDBNutritionEstimator.swift; sourceTree = "<group>"; };
+		0404A1B2C3D4000000000404 /* MealDBAddMealSheet.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MealDBAddMealSheet.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -141,6 +143,7 @@
 				0401A1B2C3D4000000000401 /* TheMealDBClient.swift */,
 				0402A1B2C3D4000000000402 /* MealRecommendations.swift */,
 				0403A1B2C3D4000000000403 /* MealDBNutritionEstimator.swift */,
+				0404A1B2C3D4000000000404 /* MealDBAddMealSheet.swift */,
 			);
 			path = NutritionTracker;
 			sourceTree = "<group>";
@@ -261,6 +264,7 @@
 				0501A1B2C3D4000000000501 /* TheMealDBClient.swift in Sources */,
 				0502A1B2C3D4000000000502 /* MealRecommendations.swift in Sources */,
 				0503A1B2C3D4000000000503 /* MealDBNutritionEstimator.swift in Sources */,
+				0504A1B2C3D4000000000504 /* MealDBAddMealSheet.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

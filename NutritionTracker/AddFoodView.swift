@@ -34,14 +34,7 @@ struct AddFoodView: View {
     @State private var isMealDBLoading = false
     @State private var mealDBError: String?
 
-    @State private var isMealDBDetailLoading = false
     @State private var selectedMealDetail: TheMealDBClient.MealDetail?
-    @State private var mealDBServings = "1"
-    @State private var mealDBAssumedServingsPerRecipe: Double = 4
-    @State private var showMealDBServingsValidation = false
-    @State private var isMealDBNutritionComputing = false
-    @State private var mealDBComputedNutrients: [Int: Double] = [:]
-    @State private var mealDBComputedPreviewText: String?
 
     private enum USDABrowsePhase: Equatable {
         case pickCategory
@@ -104,7 +97,16 @@ struct AddFoodView: View {
                 portionSheet(for: item)
             }
             .sheet(item: $selectedMealDetail) { detail in
-                mealDBNutritionSheet(for: detail)
+                MealDBAddMealSheet(
+                    detail: detail,
+                    foodDatabase: foodDatabase,
+                    onAdd: { name, nutrients in
+                        store.addFood(name: name, nutrients: nutrients)
+                    },
+                    onClose: {
+                        selectedMealDetail = nil
+                    }
+                )
             }
         }
     }
@@ -610,141 +612,13 @@ struct AddFoodView: View {
         }
     }
 
-    @MainActor
     private func selectMealDBMeal(_ meal: TheMealDBClient.Meal) async {
-        isMealDBDetailLoading = true
-        defer { isMealDBDetailLoading = false }
-
         do {
             let detail = try await mealDBClient.lookupMealDetail(idMeal: meal.idMeal)
-
-            // Reset serving + computed nutrition state for the new meal.
-            mealDBServings = "1"
-            mealDBAssumedServingsPerRecipe = 4
-            showMealDBServingsValidation = false
-            isMealDBNutritionComputing = false
-            mealDBComputedNutrients = [:]
-            mealDBComputedPreviewText = nil
             selectedMealDetail = detail
         } catch {
             mealDBError = error.localizedDescription
         }
-    }
-
-    private func mealDBNutritionSheet(for detail: TheMealDBClient.MealDetail) -> some View {
-        NavigationStack {
-            Form {
-                Section("Meal") {
-                    Text(detail.strMeal)
-                        .font(.body)
-                    if !detail.ingredientLines.isEmpty {
-                        Text(detail.ingredientLines.joined(separator: "\n"))
-                            .font(.footnote)
-                            .foregroundStyle(.secondary)
-                    }
-                }
-
-                Section("Servings") {
-                    TextField("Servings", text: $mealDBServings)
-                        .keyboardType(.decimalPad)
-                    Text("Serving counts are estimated (TheMealDB doesn’t provide them).")
-                        .font(.footnote)
-                        .foregroundStyle(.secondary)
-                    Text("We’ll estimate nutrition by matching ingredients to the USDA foundation database and scaling by servings.")
-                        .font(.footnote)
-                        .foregroundStyle(.secondary)
-                }
-
-                if showMealDBServingsValidation {
-                    Section {
-                        Text("Enter a valid servings amount (e.g. 1, 2, 0.5).")
-                            .foregroundStyle(.red)
-                            .font(.footnote)
-                    }
-                }
-
-                if let preview = mealDBComputedPreviewText {
-                    Section("Estimated nutrition (total)") {
-                        Text(preview)
-                            .font(.footnote)
-                            .foregroundStyle(.secondary)
-                    }
-                }
-
-                Section {
-                    Button(isMealDBNutritionComputing ? "Calculating…" : "Add to log") {
-                        Task { await addMealDBDetailToLog(detail) }
-                    }
-                    .disabled(isMealDBDetailLoading || isMealDBNutritionComputing || foodDatabase.isLoading)
-                }
-            }
-            .scrollDismissesKeyboard(.interactively)
-            .navigationTitle("Add Meal")
-            .navigationBarTitleDisplayMode(.inline)
-            .toolbar {
-                ToolbarItem(placement: .cancellationAction) {
-                    Button("Cancel") {
-                        selectedMealDetail = nil
-                    }
-                }
-            }
-        }
-    }
-
-    @MainActor
-    private func addMealDBDetailToLog(_ detail: TheMealDBClient.MealDetail) async {
-        let servingsRaw = mealDBServings.trimmingCharacters(in: .whitespacesAndNewlines)
-        guard let servings = Double(servingsRaw), servings > 0 else {
-            showMealDBServingsValidation = true
-            return
-        }
-        showMealDBServingsValidation = false
-
-        guard !foodDatabase.isLoading else {
-            mealDBComputedPreviewText = "USDA database is still loading. Please try again in a moment."
-            return
-        }
-
-        isMealDBNutritionComputing = true
-        defer { isMealDBNutritionComputing = false }
-
-        // Estimator returns totals for the full recipe. Convert to per-serving using a heuristic
-        // serving yield estimate, then scale by the user's entered servings.
-        let recipeTotals = MealDBNutritionEstimator.estimateNutrients(
-            detail: detail,
-            servings: 1.0,
-            foodDatabase: foodDatabase
-        )
-        let assumedServings = MealRecommendationsViewModel.estimateServingsPerRecipe(fromRecipeTotals: recipeTotals)
-        mealDBAssumedServingsPerRecipe = assumedServings
-        let perServing = MealRecommendationsViewModel.divideNutrients(recipeTotals, by: assumedServings)
-        var nutrients: [Int: Double] = [:]
-        nutrients.reserveCapacity(perServing.count)
-        for (k, v) in perServing {
-            nutrients[k] = v * servings
-        }
-        mealDBComputedNutrients = nutrients
-
-        if let calories = nutrients[1008] {
-            let protein = nutrients[1003] ?? 0
-            let carbs = nutrients[1005] ?? 0
-            let fat = nutrients[1004] ?? 0
-            mealDBComputedPreviewText = String(
-                format: "Calories: %.0f kcal\nProtein: %.1f g\nCarbs: %.1f g\nFat: %.1f g\n\nAssumed recipe yield: %.1f servings",
-                calories,
-                protein,
-                carbs,
-                fat,
-                assumedServings
-            )
-        } else {
-            mealDBComputedPreviewText = "Could not estimate calories from the ingredient matches."
-        }
-
-        guard nutrients[1008] != nil else { return }
-
-        store.addFood(name: "\(detail.strMeal) (\(servingsRaw) servings)", nutrients: nutrients)
-        selectedMealDetail = nil
     }
 
     /// Computes calories from macros using:
