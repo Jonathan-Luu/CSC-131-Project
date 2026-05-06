@@ -9,7 +9,6 @@ This repository contains a ready-to-use SwiftUI app source for a nutrition track
 - View a history log of all foods added
 - Remove food entries if added by mistake
 - See goal consistency across logged days
-- Get food recommendations based on current nutrient deficits
 - Calculate BMR / daily energy needs from profile inputs
 
 ## Files
