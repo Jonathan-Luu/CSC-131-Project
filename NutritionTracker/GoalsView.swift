@@ -25,6 +25,11 @@ struct GoalsView: View {
                 } 
 
                 Section {
+                    Button("Save Goal Changes") {
+                        saveGoalChanges()
+                    }
+                    .disabled(!hasUnsavedChanges)
+
                     NavigationLink {
                         AddGoalView()
                             .environmentObject(store)
@@ -56,6 +61,22 @@ struct GoalsView: View {
         NutrientCatalog.tracked.filter { (store.goal.targets[$0.id] ?? 0) > 0 }
     }
 
+    private var hasUnsavedChanges: Bool {
+        for def in activeDefinitions {
+            guard
+                let draftValue = Double((draft[def.id] ?? "").trimmingCharacters(in: .whitespacesAndNewlines))
+            else {
+                return true
+            }
+
+            if draftValue != (store.goal.targets[def.id] ?? 0) {
+                return true
+            }
+        }
+
+        return false
+    }
+
     private func goalRow(def: NutrientCatalog.Definition) -> some View {
         HStack(alignment: .firstTextBaseline) {
             VStack(alignment: .leading, spacing: 2) {
@@ -75,6 +96,9 @@ struct GoalsView: View {
             .keyboardType(.decimalPad)
             .multilineTextAlignment(.trailing)
             .frame(width: 88)
+            .onSubmit {
+                saveGoalChanges()
+            }
 
             Button(role: .destructive) {
                 removeGoal(def.id)
@@ -104,6 +128,24 @@ struct GoalsView: View {
         store.updateGoal(targets: targets)
         draft.removeValue(forKey: id)
         showValidation = false
+    }
+
+    private func saveGoalChanges() {
+        var targets = store.goal.targets
+
+        for def in activeDefinitions {
+            let raw = (draft[def.id] ?? "").trimmingCharacters(in: .whitespacesAndNewlines)
+            guard let value = Double(raw), value > 0 else {
+                showValidation = true
+                return
+            }
+
+            targets[def.id] = value
+        }
+
+        store.updateGoal(targets: targets)
+        showValidation = false
+        syncFromStore()
     }
 
     private func formatGoal(_ goal: Double) -> String {
