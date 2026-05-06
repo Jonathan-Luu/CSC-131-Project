@@ -165,7 +165,7 @@ struct RecommendationsView: View {
                 Section("Servings") {
                     TextField("Servings", text: $servingsText)
                         .keyboardType(.decimalPad)
-                    Text("Serving counts are estimated (TheMealDB doesn’t provide them). We assume this recipe makes \(format(selectedAssumedServingsPerRecipe)) servings.")
+                    Text("Serving counts are estimated (TheMealDB doesn’t provide them).")
                         .font(.footnote)
                         .foregroundStyle(.secondary)
                     Text("We’ll estimate nutrition by matching ingredients to the USDA foundation database and scaling by servings.")
