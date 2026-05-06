@@ -37,6 +37,7 @@ struct AddFoodView: View {
     @State private var isMealDBDetailLoading = false
     @State private var selectedMealDetail: TheMealDBClient.MealDetail?
     @State private var mealDBServings = "1"
+    @State private var mealDBAssumedServingsPerRecipe: Double = 4
     @State private var showMealDBServingsValidation = false
     @State private var isMealDBNutritionComputing = false
     @State private var mealDBComputedNutrients: [Int: Double] = [:]
@@ -619,6 +620,7 @@ struct AddFoodView: View {
 
             // Reset serving + computed nutrition state for the new meal.
             mealDBServings = "1"
+            mealDBAssumedServingsPerRecipe = 4
             showMealDBServingsValidation = false
             isMealDBNutritionComputing = false
             mealDBComputedNutrients = [:]
@@ -645,6 +647,9 @@ struct AddFoodView: View {
                 Section("Servings") {
                     TextField("Servings", text: $mealDBServings)
                         .keyboardType(.decimalPad)
+                    Text("Serving counts are estimated (TheMealDB doesn’t provide them).")
+                        .font(.footnote)
+                        .foregroundStyle(.secondary)
                     Text("We’ll estimate nutrition by matching ingredients to the USDA foundation database and scaling by servings.")
                         .font(.footnote)
                         .foregroundStyle(.secondary)
@@ -703,11 +708,21 @@ struct AddFoodView: View {
         isMealDBNutritionComputing = true
         defer { isMealDBNutritionComputing = false }
 
-        let nutrients = MealDBNutritionEstimator.estimateNutrients(
+        // Estimator returns totals for the full recipe. Convert to per-serving using a heuristic
+        // serving yield estimate, then scale by the user's entered servings.
+        let recipeTotals = MealDBNutritionEstimator.estimateNutrients(
             detail: detail,
-            servings: servings,
+            servings: 1.0,
             foodDatabase: foodDatabase
         )
+        let assumedServings = MealRecommendationsViewModel.estimateServingsPerRecipe(fromRecipeTotals: recipeTotals)
+        mealDBAssumedServingsPerRecipe = assumedServings
+        let perServing = MealRecommendationsViewModel.divideNutrients(recipeTotals, by: assumedServings)
+        var nutrients: [Int: Double] = [:]
+        nutrients.reserveCapacity(perServing.count)
+        for (k, v) in perServing {
+            nutrients[k] = v * servings
+        }
         mealDBComputedNutrients = nutrients
 
         if let calories = nutrients[1008] {
@@ -715,11 +730,12 @@ struct AddFoodView: View {
             let carbs = nutrients[1005] ?? 0
             let fat = nutrients[1004] ?? 0
             mealDBComputedPreviewText = String(
-                format: "Calories: %.0f kcal\nProtein: %.1f g\nCarbs: %.1f g\nFat: %.1f g",
+                format: "Calories: %.0f kcal\nProtein: %.1f g\nCarbs: %.1f g\nFat: %.1f g\n\nAssumed recipe yield: %.1f servings",
                 calories,
                 protein,
                 carbs,
-                fat
+                fat,
+                assumedServings
             )
         } else {
             mealDBComputedPreviewText = "Could not estimate calories from the ingredient matches."
