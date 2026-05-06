@@ -8,6 +8,8 @@ struct MealRecommendation: Identifiable, Hashable {
     let focusNutrientIds: [Int]
     /// Estimated nutrient totals **per 1 serving**.
     let estimatedNutrientsPerServing: [Int: Double]
+    /// How many servings we assumed the recipe makes (TheMealDB does not provide this).
+    let assumedServingsPerRecipe: Double
 }
 
 /// Recommends TheMealDB meals based on which nutrition goals the user is currently missing.
@@ -19,8 +21,6 @@ final class MealRecommendationsViewModel: ObservableObject {
     @Published var focusDeficits: [(nutrientId: Int, deficit: Double)] = []
 
     private let client = TheMealDBClient()
-    /// TheMealDB does not provide serving size/count; we use a consistent default.
-    private let assumedServingsPerRecipe: Double = 4.0
 
     func refresh(store: NutritionStore, foodDatabase: FoundationFoodDatabase) async {
         errorMessage = nil
@@ -100,7 +100,8 @@ final class MealRecommendationsViewModel: ObservableObject {
                 servings: 1.0,
                 foodDatabase: foodDatabase
             )
-            let perServing = Self.divideNutrients(recipeTotals, by: assumedServingsPerRecipe)
+            let assumedServings = Self.estimateServingsPerRecipe(fromRecipeTotals: recipeTotals)
+            let perServing = Self.divideNutrients(recipeTotals, by: assumedServings)
 
             var score: Double = 0
             for (nutrientId, deficit) in deficits {
@@ -125,7 +126,8 @@ final class MealRecommendationsViewModel: ObservableObject {
                 name: meal.strMeal,
                 thumbURL: meal.strMealThumb.flatMap(URL.init(string:)),
                 focusNutrientIds: focusIds,
-                estimatedNutrientsPerServing: perServing
+                estimatedNutrientsPerServing: perServing,
+                assumedServingsPerRecipe: assumedServings
             )
             scored.append((rec, score))
         }
@@ -208,6 +210,23 @@ final class MealRecommendationsViewModel: ObservableObject {
             out[k] = v / divisor
         }
         return out
+    }
+
+    /// Heuristic: estimate how many servings a recipe yields from its total calories.
+    /// We pick a typical "meal serving" calorie target and clamp to a reasonable range.
+    static func estimateServingsPerRecipe(fromRecipeTotals nutrients: [Int: Double]) -> Double {
+        let calories = nutrients[1008] ?? 0
+        if calories <= 0 { return 4 } // fallback when we can't estimate energy
+
+        // Typical dinner serving ~500–700 kcal. We use 600 kcal as a midpoint.
+        let targetPerServing: Double = 600
+        let raw = max(1, calories / targetPerServing)
+
+        // Clamp to avoid absurd values from noisy ingredient matching.
+        let clamped = min(max(raw, 1), 8)
+
+        // Snap to halves for readability.
+        return (clamped * 2).rounded() / 2
     }
 }
 

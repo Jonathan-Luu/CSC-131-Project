@@ -78,6 +78,9 @@ struct RecommendationsView: View {
                                             Text("Tap to add like Lookup Meals")
                                                 .font(.caption)
                                                 .foregroundStyle(.tertiary)
+                                            Text("Per serving (assumes \(format(rec.assumedServingsPerRecipe)) servings)")
+                                                .font(.caption)
+                                                .foregroundStyle(.tertiary)
                                         }
                                         Spacer()
                                     }
