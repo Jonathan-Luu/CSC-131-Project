@@ -37,6 +37,10 @@
 		AB752DE72F99C1B0007A2817 /* FirebaseAnalytics in Frameworks */ = {isa = PBXBuildFile; productRef = AB752DE62F99C1B0007A2817 /* FirebaseAnalytics */; };
 		AB7A3A012F99D000007A2817 /* FirebaseFirestore in Frameworks */ = {isa = PBXBuildFile; productRef = AB7A3A002F99D000007A2817 /* FirebaseFirestore */; };
 		AB752DE92F99C404007A2817 /* GoogleService-Info.plist in Resources */ = {isa = PBXBuildFile; fileRef = AB752DE82F99C404007A2817 /* GoogleService-Info.plist */; };
+		0501A1B2C3D4000000000501 /* TheMealDBClient.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0401A1B2C3D4000000000401 /* TheMealDBClient.swift */; };
+		0502A1B2C3D4000000000502 /* MealRecommendations.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0402A1B2C3D4000000000402 /* MealRecommendations.swift */; };
+		0503A1B2C3D4000000000503 /* MealDBNutritionEstimator.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0403A1B2C3D4000000000403 /* MealDBNutritionEstimator.swift */; };
+		0504A1B2C3D4000000000504 /* MealDBAddMealSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0404A1B2C3D4000000000404 /* MealDBAddMealSheet.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -68,6 +72,10 @@
 		AB752DE12F99C000007A2817 /* LoginView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LoginView.swift; sourceTree = "<group>"; };
 		AC752DF02F99C001007A2817 /* MoreView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MoreView.swift; sourceTree = "<group>"; };
 		AC752DF22F99C001007A2817 /* ProfileView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProfileView.swift; sourceTree = "<group>"; };
+		0401A1B2C3D4000000000401 /* TheMealDBClient.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TheMealDBClient.swift; sourceTree = "<group>"; };
+		0402A1B2C3D4000000000402 /* MealRecommendations.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MealRecommendations.swift; sourceTree = "<group>"; };
+		0403A1B2C3D4000000000403 /* MealDBNutritionEstimator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MealDBNutritionEstimator.swift; sourceTree = "<group>"; };
+		0404A1B2C3D4000000000404 /* MealDBAddMealSheet.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MealDBAddMealSheet.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -132,6 +140,10 @@
 				AB752DE12F99C000007A2817 /* LoginView.swift */,
 				AC752DF02F99C001007A2817 /* MoreView.swift */,
 				AC752DF22F99C001007A2817 /* ProfileView.swift */,
+				0401A1B2C3D4000000000401 /* TheMealDBClient.swift */,
+				0402A1B2C3D4000000000402 /* MealRecommendations.swift */,
+				0403A1B2C3D4000000000403 /* MealDBNutritionEstimator.swift */,
+				0404A1B2C3D4000000000404 /* MealDBAddMealSheet.swift */,
 			);
 			path = NutritionTracker;
 			sourceTree = "<group>";
@@ -249,6 +261,10 @@
 				A1B2C3D4E5F6000000000110 /* BMRCalculatorView.swift in Sources */,
 				AC752DF12F99C001007A2817 /* MoreView.swift in Sources */,
 				AC752DF32F99C001007A2817 /* ProfileView.swift in Sources */,
+				0501A1B2C3D4000000000501 /* TheMealDBClient.swift in Sources */,
+				0502A1B2C3D4000000000502 /* MealRecommendations.swift in Sources */,
+				0503A1B2C3D4000000000503 /* MealDBNutritionEstimator.swift in Sources */,
+				0504A1B2C3D4000000000504 /* MealDBAddMealSheet.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
