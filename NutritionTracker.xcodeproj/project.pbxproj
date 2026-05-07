@@ -7,6 +7,10 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		0501A1B2C3D4000000000501 /* TheMealDBClient.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0401A1B2C3D4000000000401 /* TheMealDBClient.swift */; };
+		0502A1B2C3D4000000000502 /* MealRecommendations.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0402A1B2C3D4000000000402 /* MealRecommendations.swift */; };
+		0503A1B2C3D4000000000503 /* MealDBNutritionEstimator.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0403A1B2C3D4000000000403 /* MealDBNutritionEstimator.swift */; };
+		0504A1B2C3D4000000000504 /* MealDBAddMealSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0404A1B2C3D4000000000404 /* MealDBAddMealSheet.swift */; };
 		A1B2C3D4E5F6000000000101 /* NutritionTrackerApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1B2C3D4E5F6000000000201 /* NutritionTrackerApp.swift */; };
 		A1B2C3D4E5F6000000000102 /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1B2C3D4E5F6000000000202 /* ContentView.swift */; };
 		A1B2C3D4E5F6000000000103 /* Models.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1B2C3D4E5F6000000000203 /* Models.swift */; };
@@ -30,20 +34,20 @@
 		A1B2C3D4E5F6000000000121 /* AllEntriesHistoryView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1B2C3D4E5F6000000000222 /* AllEntriesHistoryView.swift */; };
 		AB752DE02F99C000007A2817 /* AuthViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB752DDF2F99C000007A2817 /* AuthViewModel.swift */; };
 		AB752DE12F99C001007A2817 /* LoginView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB752DE12F99C000007A2817 /* LoginView.swift */; };
+		AB752DE52F99C18F007A2817 /* FirebaseCore in Frameworks */ = {isa = PBXBuildFile; productRef = AB752DE42F99C18F007A2817 /* FirebaseCore */; };
+		AB752DE72F99C1B0007A2817 /* FirebaseAnalytics in Frameworks */ = {isa = PBXBuildFile; productRef = AB752DE62F99C1B0007A2817 /* FirebaseAnalytics */; };
+		AB752DE92F99C404007A2817 /* GoogleService-Info.plist in Resources */ = {isa = PBXBuildFile; fileRef = AB752DE82F99C404007A2817 /* GoogleService-Info.plist */; };
+		AB752DEC2F99C500007A2817 /* FirebaseAuth in Frameworks */ = {isa = PBXBuildFile; productRef = AB752DEB2F99C500007A2817 /* FirebaseAuth */; };
+		AB7A3A012F99D000007A2817 /* FirebaseFirestore in Frameworks */ = {isa = PBXBuildFile; productRef = AB7A3A002F99D000007A2817 /* FirebaseFirestore */; };
 		AC752DF12F99C001007A2817 /* MoreView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AC752DF02F99C001007A2817 /* MoreView.swift */; };
 		AC752DF32F99C001007A2817 /* ProfileView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AC752DF22F99C001007A2817 /* ProfileView.swift */; };
-		AB752DE52F99C18F007A2817 /* FirebaseCore in Frameworks */ = {isa = PBXBuildFile; productRef = AB752DE42F99C18F007A2817 /* FirebaseCore */; };
-		AB752DEC2F99C500007A2817 /* FirebaseAuth in Frameworks */ = {isa = PBXBuildFile; productRef = AB752DEB2F99C500007A2817 /* FirebaseAuth */; };
-		AB752DE72F99C1B0007A2817 /* FirebaseAnalytics in Frameworks */ = {isa = PBXBuildFile; productRef = AB752DE62F99C1B0007A2817 /* FirebaseAnalytics */; };
-		AB7A3A012F99D000007A2817 /* FirebaseFirestore in Frameworks */ = {isa = PBXBuildFile; productRef = AB7A3A002F99D000007A2817 /* FirebaseFirestore */; };
-		AB752DE92F99C404007A2817 /* GoogleService-Info.plist in Resources */ = {isa = PBXBuildFile; fileRef = AB752DE82F99C404007A2817 /* GoogleService-Info.plist */; };
-		0501A1B2C3D4000000000501 /* TheMealDBClient.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0401A1B2C3D4000000000401 /* TheMealDBClient.swift */; };
-		0502A1B2C3D4000000000502 /* MealRecommendations.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0402A1B2C3D4000000000402 /* MealRecommendations.swift */; };
-		0503A1B2C3D4000000000503 /* MealDBNutritionEstimator.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0403A1B2C3D4000000000403 /* MealDBNutritionEstimator.swift */; };
-		0504A1B2C3D4000000000504 /* MealDBAddMealSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0404A1B2C3D4000000000404 /* MealDBAddMealSheet.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
+		0401A1B2C3D4000000000401 /* TheMealDBClient.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TheMealDBClient.swift; sourceTree = "<group>"; };
+		0402A1B2C3D4000000000402 /* MealRecommendations.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MealRecommendations.swift; sourceTree = "<group>"; };
+		0403A1B2C3D4000000000403 /* MealDBNutritionEstimator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MealDBNutritionEstimator.swift; sourceTree = "<group>"; };
+		0404A1B2C3D4000000000404 /* MealDBAddMealSheet.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MealDBAddMealSheet.swift; sourceTree = "<group>"; };
 		A1B2C3D4E5F6000000000002 /* NutritionTracker.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = NutritionTracker.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		A1B2C3D4E5F6000000000201 /* NutritionTrackerApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NutritionTrackerApp.swift; sourceTree = "<group>"; };
 		A1B2C3D4E5F6000000000202 /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
@@ -68,14 +72,10 @@
 		A1B2C3D4E5F6000000000221 /* Date+Calendar.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Date+Calendar.swift"; sourceTree = "<group>"; };
 		A1B2C3D4E5F6000000000222 /* AllEntriesHistoryView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AllEntriesHistoryView.swift; sourceTree = "<group>"; };
 		AB752DDF2F99C000007A2817 /* AuthViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AuthViewModel.swift; sourceTree = "<group>"; };
-		AB752DE82F99C404007A2817 /* GoogleService-Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = "GoogleService-Info.plist"; sourceTree = "<group>"; };
 		AB752DE12F99C000007A2817 /* LoginView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LoginView.swift; sourceTree = "<group>"; };
+		AB752DE82F99C404007A2817 /* GoogleService-Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = "GoogleService-Info.plist"; sourceTree = "<group>"; };
 		AC752DF02F99C001007A2817 /* MoreView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MoreView.swift; sourceTree = "<group>"; };
 		AC752DF22F99C001007A2817 /* ProfileView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProfileView.swift; sourceTree = "<group>"; };
-		0401A1B2C3D4000000000401 /* TheMealDBClient.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TheMealDBClient.swift; sourceTree = "<group>"; };
-		0402A1B2C3D4000000000402 /* MealRecommendations.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MealRecommendations.swift; sourceTree = "<group>"; };
-		0403A1B2C3D4000000000403 /* MealDBNutritionEstimator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MealDBNutritionEstimator.swift; sourceTree = "<group>"; };
-		0404A1B2C3D4000000000404 /* MealDBAddMealSheet.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MealDBAddMealSheet.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -191,7 +191,7 @@
 			attributes = {
 				BuildIndependentTargetsInParallel = 1;
 				LastSwiftUpdateCheck = 1600;
-				LastUpgradeCheck = 1600;
+				LastUpgradeCheck = 2620;
 				TargetAttributes = {
 					A1B2C3D4E5F6000000000001 = {
 						CreatedOnToolsVersion = 16.0;
@@ -277,12 +277,31 @@
 				ALWAYS_SEARCH_USER_PATHS = NO;
 				CLANG_ENABLE_MODULES = YES;
 				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
 				DEBUG_INFORMATION_FORMAT = dwarf;
-				DEVELOPMENT_TEAM = "";
+				DEVELOPMENT_TEAM = 6F7N83Q2J3;
 				ENABLE_STRICT_OBJC_MSGSEND = YES;
 				ENABLE_TESTABILITY = YES;
+				ENABLE_USER_SCRIPT_SANDBOXING = YES;
 				GCC_C_LANGUAGE_STANDARD = gnu17;
 				GCC_DYNAMIC_NO_PIC = NO;
 				GCC_NO_COMMON_BLOCKS = YES;
@@ -304,6 +323,7 @@
 				PRODUCT_BUNDLE_IDENTIFIER = com.landon.nutritiontracker;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SDKROOT = iphoneos;
+				STRING_CATALOG_GENERATE_SYMBOLS = YES;
 				SWIFT_ACTIVE_COMPILATION_CONDITIONS = DEBUG;
 				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
 				SWIFT_VERSION = 5.0;
@@ -316,12 +336,31 @@
 				ALWAYS_SEARCH_USER_PATHS = NO;
 				CLANG_ENABLE_MODULES = YES;
 				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
 				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
-				DEVELOPMENT_TEAM = "";
+				DEVELOPMENT_TEAM = 6F7N83Q2J3;
 				ENABLE_NS_ASSERTIONS = NO;
 				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				ENABLE_USER_SCRIPT_SANDBOXING = YES;
 				GCC_C_LANGUAGE_STANDARD = gnu17;
 				GCC_NO_COMMON_BLOCKS = YES;
 				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
@@ -336,6 +375,7 @@
 				PRODUCT_BUNDLE_IDENTIFIER = com.landon.nutritiontracker;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SDKROOT = iphoneos;
+				STRING_CATALOG_GENERATE_SYMBOLS = YES;
 				SWIFT_COMPILATION_MODE = wholemodule;
 				SWIFT_VERSION = 5.0;
 			};
@@ -347,7 +387,6 @@
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
-				DEVELOPMENT_TEAM = 6F7N83Q2J3;
 				GENERATE_INFOPLIST_FILE = NO;
 				INFOPLIST_FILE = NutritionTracker/Info.plist;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
@@ -374,7 +413,6 @@
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
-				DEVELOPMENT_TEAM = 6F7N83Q2J3;
 				GENERATE_INFOPLIST_FILE = NO;
 				INFOPLIST_FILE = NutritionTracker/Info.plist;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;

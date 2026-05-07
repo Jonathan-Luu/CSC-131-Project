@@ -4,13 +4,13 @@ import FirebaseAuth
 
 final class NutritionStore: ObservableObject {
     @Published var goal: NutritionGoal {
-        didSet { persist() }
+        didSet { persist(.goal) }
     }
     @Published var entries: [FoodEntry] {
-        didSet { persist() }
+        didSet { persist(.entries) }
     }
     @Published var profile: UserProfile {
-        didSet { persist() }
+        didSet { persist(.profile) }
     }
 
     private let defaults = UserDefaults.standard
@@ -18,12 +18,19 @@ final class NutritionStore: ObservableObject {
     private static let entriesKey = "nutrition.entries"
     private static let profileKey = "nutrition.profile"
 
+    private enum PersistenceScope {
+        case goal
+        case entries
+        case profile
+    }
+
     private var uid: String?
     private var firestoreListener: ListenerRegistration?
     private var isApplyingRemote = false
     private var pendingCloudWrite: DispatchWorkItem?
     private var hasLoadedRemoteOnce = false
     private var hasScheduledRemoteLoadFallback = false
+    private var isCloudSyncBlocked = false
 
     private let recommendationPool: [RecommendedFood] = [
         RecommendedFood(name: "Greek Yogurt (1 cup)", nutrients: [1008: 130, 1003: 23, 1253: 15]),
@@ -59,6 +66,7 @@ final class NutritionStore: ObservableObject {
         self.uid = uid
         hasLoadedRemoteOnce = false
         hasScheduledRemoteLoadFallback = false
+        isCloudSyncBlocked = false
 
         // Signed-out state should not show the previous user's data.
         guard let uid, !uid.isEmpty else {
@@ -210,7 +218,7 @@ final class NutritionStore: ObservableObject {
         }
     }
 
-    private func persist() {
+    private func persist(_ scope: PersistenceScope) {
         // When we're switching users or applying cloud data, `goal/entries/profile` are
         // temporarily set programmatically. We must not persist those intermediate values
         // or we can overwrite a user's cached data with defaults/empties.
@@ -221,11 +229,16 @@ final class NutritionStore: ObservableObject {
         let entriesKey = scopedKey(Self.entriesKey, uid: uid)
         let profileKey = scopedKey(Self.profileKey, uid: uid)
 
-        Self.saveObject(goal, forKey: goalKey, defaults: defaults)
-        Self.saveObject(entries, forKey: entriesKey, defaults: defaults)
-        Self.saveObject(profile, forKey: profileKey, defaults: defaults)
+        switch scope {
+        case .goal:
+            Self.saveObject(goal, forKey: goalKey, defaults: defaults)
+        case .entries:
+            Self.saveObject(entries, forKey: entriesKey, defaults: defaults)
+        case .profile:
+            Self.saveObject(profile, forKey: profileKey, defaults: defaults)
+        }
 
-        if !isApplyingRemote, hasLoadedRemoteOnce {
+        if !isApplyingRemote, hasLoadedRemoteOnce, !isCloudSyncBlocked {
             scheduleCloudWrite()
         }
     }
@@ -305,7 +318,10 @@ final class NutritionStore: ObservableObject {
 
         firestoreListener = doc.addSnapshotListener { [weak self] snapshot, error in
             guard let self else { return }
-            guard error == nil else { return }
+            if let error {
+                self.handleFirestoreListenerError(error)
+                return
+            }
             guard let snapshot else { return }
 
             // If no cloud doc exists yet, mark as loaded and (if we have local data) push it up once.
@@ -414,6 +430,7 @@ final class NutritionStore: ObservableObject {
             DispatchQueue.main.asyncAfter(deadline: .now() + 2.0) { [weak self] in
                 guard let self else { return }
                 guard self.uid == expectedUid else { return }
+                guard !self.isCloudSyncBlocked else { return }
                 if !self.hasLoadedRemoteOnce {
                     self.hasLoadedRemoteOnce = true
                     if !self.entries.isEmpty || self.goal.targets != NutritionGoal.default.targets || self.profileIsNonDefault {
@@ -426,6 +443,7 @@ final class NutritionStore: ObservableObject {
 
     private func scheduleCloudWrite() {
         guard let uid, !uid.isEmpty else { return }
+        guard !isCloudSyncBlocked else { return }
 
         pendingCloudWrite?.cancel()
         let work = DispatchWorkItem { [weak self] in
@@ -438,6 +456,7 @@ final class NutritionStore: ObservableObject {
     private func writeToCloud() {
         guard let uid, !uid.isEmpty else { return }
         if isApplyingRemote { return }
+        if isCloudSyncBlocked { return }
 
         let doc = Firestore.firestore()
             .collection("users")
@@ -445,33 +464,62 @@ final class NutritionStore: ObservableObject {
             .collection("nutrition")
             .document("state")
 
-        doc.setData(
-            [
-                "goal": [
-                    "targets": Dictionary(uniqueKeysWithValues: goal.targets.map { (String($0.key), $0.value) }),
-                ],
-                "entries": entries.map { e in
-                    [
-                        "id": e.id.uuidString,
-                        "name": e.name,
-                        "date": Timestamp(date: e.date),
-                        "nutrients": Dictionary(uniqueKeysWithValues: e.nutrients.map { (String($0.key), $0.value) }),
-                    ] as [String: Any]
-                },
-                "profile": [
-                    "age": profile.age,
-                    "weightKg": profile.weightKg,
-                    "heightCm": profile.heightCm,
-                    "isMale": profile.isMale,
-                    "activityMultiplier": profile.activityMultiplier,
-                    "lastWeightLb": profile.lastWeightLb as Any,
-                    "lastHeightFeet": profile.lastHeightFeet as Any,
-                    "lastHeightInches": profile.lastHeightInches as Any,
-                ],
-                "updatedAt": FieldValue.serverTimestamp(),
+        let payload: [String: Any] = [
+            "goal": [
+                "targets": Dictionary(uniqueKeysWithValues: goal.targets.map { (String($0.key), $0.value) }),
             ],
-            merge: true
-        )
+            "entries": entries.map { e in
+                [
+                    "id": e.id.uuidString,
+                    "name": e.name,
+                    "date": Timestamp(date: e.date),
+                    "nutrients": Dictionary(uniqueKeysWithValues: e.nutrients.map { (String($0.key), $0.value) }),
+                ] as [String: Any]
+            },
+            "profile": [
+                "age": profile.age,
+                "weightKg": profile.weightKg,
+                "heightCm": profile.heightCm,
+                "isMale": profile.isMale,
+                "activityMultiplier": profile.activityMultiplier,
+                "lastWeightLb": profile.lastWeightLb as Any,
+                "lastHeightFeet": profile.lastHeightFeet as Any,
+                "lastHeightInches": profile.lastHeightInches as Any,
+            ],
+            "updatedAt": FieldValue.serverTimestamp(),
+        ]
+
+        let expectedUid = uid
+        doc.setData(payload, merge: true) { [weak self] error in
+            guard let self, self.uid == expectedUid, let error else { return }
+            if self.isFirestoreAuthError(error) {
+                self.disableCloudSyncForCurrentUser()
+            }
+        }
+    }
+
+    private func handleFirestoreListenerError(_ error: Error) {
+        if isFirestoreAuthError(error) {
+            disableCloudSyncForCurrentUser()
+        }
+    }
+
+    private func disableCloudSyncForCurrentUser() {
+        isCloudSyncBlocked = true
+        hasLoadedRemoteOnce = false
+        pendingCloudWrite?.cancel()
+        pendingCloudWrite = nil
+        firestoreListener?.remove()
+        firestoreListener = nil
+    }
+
+    private func isFirestoreAuthError(_ error: Error) -> Bool {
+        let nsError = error as NSError
+        guard nsError.domain == FirestoreErrorDomain,
+              let code = FirestoreErrorCode.Code(rawValue: nsError.code) else {
+            return false
+        }
+        return code == .permissionDenied || code == .unauthenticated
     }
 
     private var profileIsNonDefault: Bool {

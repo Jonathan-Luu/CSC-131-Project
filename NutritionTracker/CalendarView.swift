@@ -19,14 +19,14 @@ struct CalendarView: View {
             header
 
             LazyVGrid(columns: columns, spacing: 10) {
-                ForEach(weekdaySymbols, id: \.self) { symbol in
-                    Text(symbol)
+                ForEach(weekdayHeaderItems) { item in
+                    Text(item.symbol)
                         .font(.caption2)
                         .foregroundStyle(.secondary)
                         .frame(maxWidth: .infinity)
                 }
 
-                ForEach(0..<leadingBlankDays, id: \.self) { _ in
+                ForEach(leadingBlankItems) { _ in
                     Color.clear
                         .frame(height: 36)
                 }
@@ -151,6 +151,16 @@ struct CalendarView: View {
         return Array(syms[first...] + syms[..<first])
     }
 
+    private var weekdayHeaderItems: [CalendarHeaderItem] {
+        weekdaySymbols.enumerated().map { index, symbol in
+            CalendarHeaderItem(id: "weekday-\(index)", symbol: symbol)
+        }
+    }
+
+    private var leadingBlankItems: [CalendarBlankItem] {
+        (0..<leadingBlankDays).map { CalendarBlankItem(id: "blank-\($0)") }
+    }
+
     private var monthStart: Date {
         clampMonth(displayedMonth.startOfMonth)
     }
@@ -202,3 +212,11 @@ struct CalendarView: View {
     }
 }
 
+private struct CalendarHeaderItem: Identifiable {
+    let id: String
+    let symbol: String
+}
+
+private struct CalendarBlankItem: Identifiable {
+    let id: String
+}
