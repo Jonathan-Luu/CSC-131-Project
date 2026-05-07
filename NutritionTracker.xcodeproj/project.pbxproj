@@ -39,6 +39,7 @@
 		AB752DE92F99C404007A2817 /* GoogleService-Info.plist in Resources */ = {isa = PBXBuildFile; fileRef = AB752DE82F99C404007A2817 /* GoogleService-Info.plist */; };
 		AB752DEC2F99C500007A2817 /* FirebaseAuth in Frameworks */ = {isa = PBXBuildFile; productRef = AB752DEB2F99C500007A2817 /* FirebaseAuth */; };
 		AB7A3A012F99D000007A2817 /* FirebaseFirestore in Frameworks */ = {isa = PBXBuildFile; productRef = AB7A3A002F99D000007A2817 /* FirebaseFirestore */; };
+		ABE712ED2FAC3C41002A5594 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = ABE712EC2FAC3C41002A5594 /* Assets.xcassets */; };
 		AC752DF12F99C001007A2817 /* MoreView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AC752DF02F99C001007A2817 /* MoreView.swift */; };
 		AC752DF32F99C001007A2817 /* ProfileView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AC752DF22F99C001007A2817 /* ProfileView.swift */; };
 /* End PBXBuildFile section */
@@ -74,6 +75,7 @@
 		AB752DDF2F99C000007A2817 /* AuthViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AuthViewModel.swift; sourceTree = "<group>"; };
 		AB752DE12F99C000007A2817 /* LoginView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LoginView.swift; sourceTree = "<group>"; };
 		AB752DE82F99C404007A2817 /* GoogleService-Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = "GoogleService-Info.plist"; sourceTree = "<group>"; };
+		ABE712EC2FAC3C41002A5594 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		AC752DF02F99C001007A2817 /* MoreView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MoreView.swift; sourceTree = "<group>"; };
 		AC752DF22F99C001007A2817 /* ProfileView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProfileView.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
@@ -144,6 +146,7 @@
 				0402A1B2C3D4000000000402 /* MealRecommendations.swift */,
 				0403A1B2C3D4000000000403 /* MealDBNutritionEstimator.swift */,
 				0404A1B2C3D4000000000404 /* MealDBAddMealSheet.swift */,
+				ABE712EC2FAC3C41002A5594 /* Assets.xcassets */,
 			);
 			path = NutritionTracker;
 			sourceTree = "<group>";
@@ -226,6 +229,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				A1B2C3D4E5F6000000000113 /* FoodData_Central_foundation_food_json_2025-12-18.json in Resources */,
+				ABE712ED2FAC3C41002A5594 /* Assets.xcassets in Resources */,
 				AB752DE92F99C404007A2817 /* GoogleService-Info.plist in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
