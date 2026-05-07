@@ -12,8 +12,6 @@ struct TheMealDBClient {
     struct MealDetail: Identifiable, Decodable, Hashable {
         let idMeal: String
         let strMeal: String
-        let strMealThumb: String?
-        let strInstructions: String?
 
         // Ingredient slots (TheMealDB uses numbered keys)
         let strIngredient1: String?
