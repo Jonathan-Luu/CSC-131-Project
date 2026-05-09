@@ -11,9 +11,9 @@ struct MealDBNutritionEstimator {
     ) -> [Int: Double] {
         var totalsPerRecipe: [Int: Double] = [:]
 
-        for (ingredient, measure) in detail.ingredientPairs {
-            let grams = estimateGrams(fromMeasure: measure)
-            let query = sanitizeIngredientQuery(ingredient)
+        for ingredient in detail.ingredients {
+            let grams = estimateGrams(fromMeasure: ingredient.measure)
+            let query = sanitizeIngredientQuery(ingredient.name)
             guard !query.isEmpty else { continue }
 
             guard let match = foodDatabase.search(query).first else { continue }
@@ -102,4 +102,3 @@ struct MealDBNutritionEstimator {
         return nil
     }
 }
-

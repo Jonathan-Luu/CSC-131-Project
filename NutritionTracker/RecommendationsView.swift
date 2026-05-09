@@ -28,16 +28,7 @@ struct RecommendationsView: View {
 
                 Section("Recommended meals") {
                     if vm.isLoading {
-                        HStack {
-                            Spacer()
-                            VStack(spacing: 8) {
-                                ProgressView()
-                                Text("Loading recommendations...")
-                                    .font(.footnote)
-                                    .foregroundStyle(.secondary)
-                            }
-                            Spacer()
-                        }
+                        recommendationsLoadingRow
                     } else if let error = vm.errorMessage {
                         Text(error)
                             .font(.footnote)
@@ -139,6 +130,19 @@ struct RecommendationsView: View {
                     }
                 )
             }
+        }
+    }
+
+    private var recommendationsLoadingRow: some View {
+        HStack {
+            Spacer()
+            VStack(spacing: 8) {
+                //ProgressView()
+                Text("Loading recommendations...")
+                    .font(.footnote)
+                    .foregroundStyle(.secondary)
+            }
+            Spacer()
         }
     }
 
