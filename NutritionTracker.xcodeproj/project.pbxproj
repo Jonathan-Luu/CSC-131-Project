@@ -13,7 +13,7 @@
 		0504A1B2C3D4000000000504 /* MealDBAddMealSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0404A1B2C3D4000000000404 /* MealDBAddMealSheet.swift */; };
 		A1B2C3D4E5F6000000000101 /* NutritionTrackerApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1B2C3D4E5F6000000000201 /* NutritionTrackerApp.swift */; };
 		A1B2C3D4E5F6000000000102 /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1B2C3D4E5F6000000000202 /* ContentView.swift */; };
-		A1B2C3D4E5F6000000000103 /* Models.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1B2C3D4E5F6000000000203 /* Models.swift */; };
+		A1B2C3D4E5F6000000000103 /* NutritionDataModels.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1B2C3D4E5F6000000000203 /* NutritionDataModels.swift */; };
 		A1B2C3D4E5F6000000000104 /* NutritionStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1B2C3D4E5F6000000000204 /* NutritionStore.swift */; };
 		A1B2C3D4E5F6000000000105 /* DashboardView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1B2C3D4E5F6000000000205 /* DashboardView.swift */; };
 		A1B2C3D4E5F6000000000106 /* AddFoodView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1B2C3D4E5F6000000000206 /* AddFoodView.swift */; };
@@ -30,7 +30,7 @@
 		A1B2C3D4E5F6000000000117 /* AddGoalView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1B2C3D4E5F6000000000218 /* AddGoalView.swift */; };
 		A1B2C3D4E5F6000000000118 /* CalendarView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1B2C3D4E5F6000000000219 /* CalendarView.swift */; };
 		A1B2C3D4E5F6000000000119 /* DayHistoryView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1B2C3D4E5F6000000000220 /* DayHistoryView.swift */; };
-		A1B2C3D4E5F6000000000120 /* Date+Calendar.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1B2C3D4E5F6000000000221 /* Date+Calendar.swift */; };
+		A1B2C3D4E5F6000000000120 /* DateCalendarExtensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1B2C3D4E5F6000000000221 /* DateCalendarExtensions.swift */; };
 		A1B2C3D4E5F6000000000121 /* AllEntriesHistoryView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1B2C3D4E5F6000000000222 /* AllEntriesHistoryView.swift */; };
 		AB752DE02F99C000007A2817 /* AuthViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB752DDF2F99C000007A2817 /* AuthViewModel.swift */; };
 		AB752DE12F99C001007A2817 /* LoginView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB752DE12F99C000007A2817 /* LoginView.swift */; };
@@ -52,7 +52,7 @@
 		A1B2C3D4E5F6000000000002 /* NutritionTracker.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = NutritionTracker.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		A1B2C3D4E5F6000000000201 /* NutritionTrackerApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NutritionTrackerApp.swift; sourceTree = "<group>"; };
 		A1B2C3D4E5F6000000000202 /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
-		A1B2C3D4E5F6000000000203 /* Models.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Models.swift; sourceTree = "<group>"; };
+		A1B2C3D4E5F6000000000203 /* NutritionDataModels.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NutritionDataModels.swift; sourceTree = "<group>"; };
 		A1B2C3D4E5F6000000000204 /* NutritionStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NutritionStore.swift; sourceTree = "<group>"; };
 		A1B2C3D4E5F6000000000205 /* DashboardView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DashboardView.swift; sourceTree = "<group>"; };
 		A1B2C3D4E5F6000000000206 /* AddFoodView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AddFoodView.swift; sourceTree = "<group>"; };
@@ -70,7 +70,7 @@
 		A1B2C3D4E5F6000000000218 /* AddGoalView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AddGoalView.swift; sourceTree = "<group>"; };
 		A1B2C3D4E5F6000000000219 /* CalendarView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CalendarView.swift; sourceTree = "<group>"; };
 		A1B2C3D4E5F6000000000220 /* DayHistoryView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DayHistoryView.swift; sourceTree = "<group>"; };
-		A1B2C3D4E5F6000000000221 /* Date+Calendar.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Date+Calendar.swift"; sourceTree = "<group>"; };
+		A1B2C3D4E5F6000000000221 /* DateCalendarExtensions.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DateCalendarExtensions.swift; sourceTree = "<group>"; };
 		A1B2C3D4E5F6000000000222 /* AllEntriesHistoryView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AllEntriesHistoryView.swift; sourceTree = "<group>"; };
 		AB752DDF2F99C000007A2817 /* AuthViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AuthViewModel.swift; sourceTree = "<group>"; };
 		AB752DE12F99C000007A2817 /* LoginView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LoginView.swift; sourceTree = "<group>"; };
@@ -134,16 +134,16 @@
 				A1B2C3D4E5F6000000000209 /* RecommendationsView.swift */,
 				A1B2C3D4E5F6000000000204 /* NutritionStore.swift */,
 				A1B2C3D4E5F6000000000213 /* FoundationFoodDatabase.swift */,
-				A1B2C3D4E5F6000000000203 /* Models.swift */,
+				A1B2C3D4E5F6000000000203 /* NutritionDataModels.swift */,
 				A1B2C3D4E5F6000000000212 /* NutrientCatalog.swift */,
 				A1B2C3D4E5F6000000000215 /* NutrientNormalization.swift */,
 				A1B2C3D4E5F6000000000216 /* FoodBrowseCategories.swift */,
-				A1B2C3D4E5F6000000000221 /* Date+Calendar.swift */,
+				A1B2C3D4E5F6000000000221 /* DateCalendarExtensions.swift */,
 				AB752DDF2F99C000007A2817 /* AuthViewModel.swift */,
 				0401A1B2C3D4000000000401 /* TheMealDBClient.swift */,
+				0404A1B2C3D4000000000404 /* MealDBAddMealSheet.swift */,
 				0402A1B2C3D4000000000402 /* MealRecommendations.swift */,
 				0403A1B2C3D4000000000403 /* MealDBNutritionEstimator.swift */,
-				0404A1B2C3D4000000000404 /* MealDBAddMealSheet.swift */,
 				ABE712EC2FAC3C41002A5594 /* Assets.xcassets */,
 				A1B2C3D4E5F6000000000211 /* Info.plist */,
 				AB752DE82F99C404007A2817 /* GoogleService-Info.plist */,
@@ -243,7 +243,7 @@
 			files = (
 				A1B2C3D4E5F6000000000101 /* NutritionTrackerApp.swift in Sources */,
 				A1B2C3D4E5F6000000000102 /* ContentView.swift in Sources */,
-				A1B2C3D4E5F6000000000103 /* Models.swift in Sources */,
+				A1B2C3D4E5F6000000000103 /* NutritionDataModels.swift in Sources */,
 				AB752DE02F99C000007A2817 /* AuthViewModel.swift in Sources */,
 				A1B2C3D4E5F6000000000111 /* NutrientCatalog.swift in Sources */,
 				A1B2C3D4E5F6000000000114 /* NutrientNormalization.swift in Sources */,
@@ -258,7 +258,7 @@
 				A1B2C3D4E5F6000000000118 /* CalendarView.swift in Sources */,
 				A1B2C3D4E5F6000000000119 /* DayHistoryView.swift in Sources */,
 				A1B2C3D4E5F6000000000116 /* FoodEntryDetailView.swift in Sources */,
-				A1B2C3D4E5F6000000000120 /* Date+Calendar.swift in Sources */,
+				A1B2C3D4E5F6000000000120 /* DateCalendarExtensions.swift in Sources */,
 				A1B2C3D4E5F6000000000108 /* GoalsView.swift in Sources */,
 				AB752DE12F99C001007A2817 /* LoginView.swift in Sources */,
 				A1B2C3D4E5F6000000000109 /* RecommendationsView.swift in Sources */,

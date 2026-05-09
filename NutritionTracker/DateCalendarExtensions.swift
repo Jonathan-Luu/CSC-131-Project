@@ -19,4 +19,3 @@ extension Date {
         Calendar.current.isDate(self, inSameDayAs: other)
     }
 }
-
