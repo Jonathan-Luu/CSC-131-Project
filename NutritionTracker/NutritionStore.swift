@@ -32,16 +32,7 @@ final class NutritionStore: ObservableObject {
     private var hasScheduledRemoteLoadFallback = false
     private var isCloudSyncBlocked = false
 
-    private let recommendationPool: [RecommendedFood] = [
-        RecommendedFood(name: "Greek Yogurt (1 cup)", nutrients: [1008: 130, 1003: 23, 1253: 15]),
-        RecommendedFood(name: "Chicken Breast (100g)", nutrients: [1008: 165, 1003: 31, 1253: 85]),
-        RecommendedFood(name: "Lentils (1 cup)", nutrients: [1008: 230, 1003: 18, 1253: 0, 1079: 16]),
-        RecommendedFood(name: "Tofu (100g)", nutrients: [1008: 144, 1003: 17, 1253: 0]),
-        RecommendedFood(name: "Salmon (100g)", nutrients: [1008: 208, 1003: 20, 1253: 55]),
-        RecommendedFood(name: "Egg Whites (1 cup)", nutrients: [1008: 126, 1003: 27, 1253: 0]),
-        RecommendedFood(name: "Cottage Cheese (1 cup)", nutrients: [1008: 206, 1003: 28, 1253: 25]),
-        RecommendedFood(name: "Oatmeal (1 cup)", nutrients: [1008: 154, 1003: 6, 1253: 0, 1079: 4]),
-    ]
+    private let recommendationPool: [RecommendedFood] = []
 
     init() {
         self.goal = Self.loadGoal(forKey: Self.goalKey)

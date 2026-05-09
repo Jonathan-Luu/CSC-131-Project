@@ -8,6 +8,8 @@ struct MealDBAddMealSheet: View {
     let onAdd: (_ name: String, _ nutrients: [Int: Double]) -> Void
     let onClose: () -> Void
 
+    @EnvironmentObject private var store: NutritionStore
+
     @State private var servingsText = "1"
     @State private var showServingsValidation = false
     @State private var isNutritionComputing = false
@@ -123,20 +125,7 @@ struct MealDBAddMealSheet: View {
             nutrients[k] = v * servings
         }
 
-        if let calories = nutrients[1008] {
-            let protein = nutrients[1003] ?? 0
-            let carbs = nutrients[1005] ?? 0
-            let fat = nutrients[1004] ?? 0
-            computedPreviewText = String(
-                format: "Calories: %.0f kcal\nProtein: %.1f g\nCarbs: %.1f g\nFat: %.1f g",
-                calories,
-                protein,
-                carbs,
-                fat
-            )
-        } else {
-            computedPreviewText = "Could not estimate calories from the ingredient matches."
-        }
+        computedPreviewText = nutritionPreviewText(for: nutrients)
     }
 
     @MainActor
@@ -177,5 +166,39 @@ struct MealDBAddMealSheet: View {
         if v >= 10 { return String(format: "%.1f", v) }
         return String(format: "%.2f", v)
     }
-}
 
+    private func nutritionPreviewText(for nutrients: [Int: Double]) -> String {
+        let activeGoalDefinitions = NutrientCatalog.tracked.filter {
+            (store.goal.targets[$0.id] ?? 0) > 0
+        }
+
+        guard !activeGoalDefinitions.isEmpty else {
+            return "No nutrition goals are currently active."
+        }
+
+        let rows = activeGoalDefinitions.compactMap { def -> String? in
+            guard let value = nutrients[def.id], value.isFinite else { return nil }
+            return "\(def.name): \(formattedNutrientAmount(value, unit: def.unit))"
+        }
+
+        if rows.isEmpty {
+            return "Could not estimate nutrition for your active goals from the ingredient matches."
+        }
+
+        return rows.joined(separator: "\n")
+    }
+
+    private func formattedNutrientAmount(_ value: Double, unit: String) -> String {
+        let number: String
+        if unit == "kcal" || value >= 100 {
+            number = String(format: "%.0f", value)
+        } else if value >= 10 {
+            number = String(format: "%.1f", value)
+        } else {
+            number = String(format: "%.2f", value)
+        }
+
+        let trimmedUnit = unit.trimmingCharacters(in: .whitespacesAndNewlines)
+        return trimmedUnit.isEmpty ? number : "\(number) \(trimmedUnit)"
+    }
+}

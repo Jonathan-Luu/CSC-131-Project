@@ -30,7 +30,12 @@ struct RecommendationsView: View {
                     if vm.isLoading {
                         HStack {
                             Spacer()
-                            ProgressView()
+                            VStack(spacing: 8) {
+                                ProgressView()
+                                Text("Loading recommendations...")
+                                    .font(.footnote)
+                                    .foregroundStyle(.secondary)
+                            }
                             Spacer()
                         }
                     } else if let error = vm.errorMessage {
@@ -92,8 +97,15 @@ struct RecommendationsView: View {
             .navigationTitle("Recommendations")
             .toolbar {
                 ToolbarItem(placement: .topBarTrailing) {
-                    Button("Refresh") {
+                    Button {
                         Task { await vm.refresh(store: store, foodDatabase: foodDatabase) }
+                    } label: {
+                        if vm.isLoading {
+                            ProgressView()
+                                .controlSize(.small)
+                        } else {
+                            Text("Refresh")
+                        }
                     }
                     .disabled(vm.isLoading)
                 }

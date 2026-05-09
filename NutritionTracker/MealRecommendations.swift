@@ -23,6 +23,11 @@ final class MealRecommendationsViewModel: ObservableObject {
     private let client = TheMealDBClient()
 
     func refresh(store: NutritionStore, foodDatabase: FoundationFoodDatabase) async {
+        guard !isLoading else { return }
+
+        isLoading = true
+        defer { isLoading = false }
+
         errorMessage = nil
         recommendations = []
 
@@ -34,9 +39,6 @@ final class MealRecommendationsViewModel: ObservableObject {
             errorMessage = "USDA database is still loading. Try again in a moment."
             return
         }
-
-        isLoading = true
-        defer { isLoading = false }
 
         do {
             recommendations = try await buildRecommendations(
@@ -229,4 +231,3 @@ final class MealRecommendationsViewModel: ObservableObject {
         return (clamped * 2).rounded() / 2
     }
 }
-
