@@ -234,29 +234,10 @@ final class NutritionStore: ObservableObject {
         }
     }
 
-    private static func loadGoal(forKey key: String, legacyKey: String? = nil) -> NutritionGoal {
+    private static func loadGoal(forKey key: String) -> NutritionGoal {
         if let data = UserDefaults.standard.data(forKey: key),
            let g = try? JSONDecoder().decode(NutritionGoal.self, from: data) {
             return g
-        }
-
-        if let legacyKey,
-           let data = UserDefaults.standard.data(forKey: legacyKey) {
-            if let g = try? JSONDecoder().decode(NutritionGoal.self, from: data) {
-                return g
-            }
-            struct LegacyGoal: Codable {
-                let calories: Double
-                let protein: Double
-                let cholesterol: Double
-            }
-            if let legacy = try? JSONDecoder().decode(LegacyGoal.self, from: data) {
-                var t = NutrientCatalog.defaultGoals
-                t[1008] = legacy.calories
-                t[1003] = legacy.protein
-                t[1253] = legacy.cholesterol
-                return NutritionGoal(targets: t)
-            }
         }
 
         guard let data = UserDefaults.standard.data(forKey: key) else {
@@ -277,13 +258,8 @@ final class NutritionStore: ObservableObject {
         return .default
     }
 
-    private static func loadObject<T: Codable>(forKey key: String, legacyKey: String? = nil, defaultValue: T) -> T {
+    private static func loadObject<T: Codable>(forKey key: String, defaultValue: T) -> T {
         if let data = UserDefaults.standard.data(forKey: key),
-           let v = try? JSONDecoder().decode(T.self, from: data) {
-            return v
-        }
-        if let legacyKey,
-           let data = UserDefaults.standard.data(forKey: legacyKey),
            let v = try? JSONDecoder().decode(T.self, from: data) {
             return v
         }
