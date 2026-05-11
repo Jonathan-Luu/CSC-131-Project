@@ -23,7 +23,6 @@ struct FoodEntry: Identifiable, Codable {
 
     private enum CodingKeys: String, CodingKey {
         case id, name, nutrients, date
-        case legacyCalories, legacyProtein, legacyCholesterol
     }
 
     init(from decoder: Decoder) throws {
@@ -31,18 +30,8 @@ struct FoodEntry: Identifiable, Codable {
         id = try c.decode(UUID.self, forKey: .id)
         name = try c.decode(String.self, forKey: .name)
         date = try c.decode(Date.self, forKey: .date)
-        if let n = try c.decodeIfPresent([Int: Double].self, forKey: .nutrients) {
-            nutrients = NutrientNormalization.canonicalizeNutrients(n)
-        } else {
-            let calories = try c.decode(Double.self, forKey: .legacyCalories)
-            let protein = try c.decode(Double.self, forKey: .legacyProtein)
-            let cholesterol = try c.decode(Double.self, forKey: .legacyCholesterol)
-            nutrients = NutrientNormalization.canonicalizeNutrients([
-                NutrientNormalization.energyKcalId: calories,
-                1003: protein,
-                1253: cholesterol,
-            ])
-        }
+        let n = try c.decode([Int: Double].self, forKey: .nutrients)
+        nutrients = NutrientNormalization.canonicalizeNutrients(n)
     }
 
     func encode(to encoder: Encoder) throws {

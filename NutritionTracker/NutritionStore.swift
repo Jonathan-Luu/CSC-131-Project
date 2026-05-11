@@ -239,22 +239,6 @@ final class NutritionStore: ObservableObject {
            let g = try? JSONDecoder().decode(NutritionGoal.self, from: data) {
             return g
         }
-
-        guard let data = UserDefaults.standard.data(forKey: key) else {
-            return .default
-        }
-        struct LegacyGoal: Codable {
-            let calories: Double
-            let protein: Double
-            let cholesterol: Double
-        }
-        if let legacy = try? JSONDecoder().decode(LegacyGoal.self, from: data) {
-            var t = NutrientCatalog.defaultGoals
-            t[1008] = legacy.calories
-            t[1003] = legacy.protein
-            t[1253] = legacy.cholesterol
-            return NutritionGoal(targets: t)
-        }
         return .default
     }
 
