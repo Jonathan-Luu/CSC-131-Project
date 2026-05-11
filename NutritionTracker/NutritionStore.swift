@@ -35,9 +35,9 @@ final class NutritionStore: ObservableObject {
     private let recommendationPool: [RecommendedFood] = []
 
     init() {
-        self.goal = Self.loadGoal(forKey: Self.goalKey)
-        self.entries = Self.loadObject(forKey: Self.entriesKey, defaultValue: [])
-        self.profile = Self.loadObject(forKey: Self.profileKey, defaultValue: .default)
+        self.goal = .default
+        self.entries = []
+        self.profile = .default
 
         // If the app starts already authenticated, immediately scope to that user.
         setUser(uid: Auth.auth().currentUser?.uid)
@@ -69,42 +69,14 @@ final class NutritionStore: ObservableObject {
             return
         }
 
-        // Load local cache for this account. If this device still has legacy (pre-account)
-        // data and this account has no scoped cache yet, migrate the legacy data once.
         let goalKey = scopedKey(Self.goalKey, uid: uid)
         let entriesKey = scopedKey(Self.entriesKey, uid: uid)
         let profileKey = scopedKey(Self.profileKey, uid: uid)
 
-        let hasScoped =
-            defaults.data(forKey: goalKey) != nil ||
-            defaults.data(forKey: entriesKey) != nil ||
-            defaults.data(forKey: profileKey) != nil
-
-        let hasLegacy =
-            defaults.data(forKey: Self.goalKey) != nil ||
-            defaults.data(forKey: Self.entriesKey) != nil ||
-            defaults.data(forKey: Self.profileKey) != nil
-
         isApplyingRemote = true
-        if !hasScoped, hasLegacy {
-            // One-time migration: move legacy global data into this user's scoped keys,
-            // then delete legacy keys so it never leaks across accounts again.
-            self.goal = Self.loadGoal(forKey: Self.goalKey)
-            self.entries = Self.loadObject(forKey: Self.entriesKey, defaultValue: [])
-            self.profile = Self.loadObject(forKey: Self.profileKey, defaultValue: .default)
-
-            Self.saveObject(self.goal, forKey: goalKey, defaults: defaults)
-            Self.saveObject(self.entries, forKey: entriesKey, defaults: defaults)
-            Self.saveObject(self.profile, forKey: profileKey, defaults: defaults)
-
-            defaults.removeObject(forKey: Self.goalKey)
-            defaults.removeObject(forKey: Self.entriesKey)
-            defaults.removeObject(forKey: Self.profileKey)
-        } else {
-            self.goal = Self.loadGoal(forKey: goalKey)
-            self.entries = Self.loadObject(forKey: entriesKey, defaultValue: [])
-            self.profile = Self.loadObject(forKey: profileKey, defaultValue: .default)
-        }
+        self.goal = Self.loadGoal(forKey: goalKey)
+        self.entries = Self.loadObject(forKey: entriesKey, defaultValue: [])
+        self.profile = Self.loadObject(forKey: profileKey, defaultValue: .default)
         isApplyingRemote = false
 
         startFirestoreListener(uid: uid)
