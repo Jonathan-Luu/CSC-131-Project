@@ -8,8 +8,6 @@ struct MealRecommendation: Identifiable, Hashable {
     let focusNutrientIds: [Int]
     /// Estimated nutrient totals **per 1 serving**.
     let estimatedNutrientsPerServing: [Int: Double]
-    /// How many servings we assumed the recipe makes (TheMealDB does not provide this).
-    let assumedServingsPerRecipe: Double
 }
 
 /// Recommends TheMealDB meals based on which nutrition goals the user is currently missing.

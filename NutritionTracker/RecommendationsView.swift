@@ -137,7 +137,6 @@ struct RecommendationsView: View {
         HStack {
             Spacer()
             VStack(spacing: 8) {
-                //ProgressView()
                 Text("Loading recommendations...")
                     .font(.footnote)
                     .foregroundStyle(.secondary)
