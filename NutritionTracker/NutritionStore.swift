@@ -32,8 +32,6 @@ final class NutritionStore: ObservableObject {
     private var hasScheduledRemoteLoadFallback = false
     private var isCloudSyncBlocked = false
 
-    private let recommendationPool: [RecommendedFood] = []
-
     init() {
         self.goal = .default
         self.entries = []
@@ -131,30 +129,6 @@ final class NutritionStore: ObservableObject {
         guard !days.isEmpty else { return 0 }
         let metCount = Double(days.filter(\.metGoal).count)
         return (metCount / Double(days.count)) * 100
-    }
-
-    func recommendedFoods() -> [RecommendedFood] {
-        let today = todaysTotals
-        let calorieDeficit = max((goal.targets[1008] ?? 0) - (today[1008] ?? 0), 0)
-        let proteinDeficit = max((goal.targets[1003] ?? 0) - (today[1003] ?? 0), 0)
-        let cholesterolOver = max((today[1253] ?? 0) - (goal.targets[1253] ?? 0), 0)
-
-        let scored = recommendationPool.map { food in
-            let cals = food.nutrients[1008] ?? 0
-            let prot = food.nutrients[1003] ?? 0
-            let chol = food.nutrients[1253] ?? 0
-            let deficitHelp =
-                min(cals, calorieDeficit) * 0.3 +
-                min(prot, proteinDeficit) * 3.0
-            let cholesterolPenalty = cholesterolOver > 0 ? (chol * 0.8) : 0
-            let score = deficitHelp - cholesterolPenalty
-            return (food, score)
-        }
-
-        return scored
-            .sorted(by: { $0.1 > $1.1 })
-            .prefix(5)
-            .map(\.0)
     }
 
     func calculateBMR() -> Double {

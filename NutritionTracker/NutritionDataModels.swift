@@ -74,8 +74,3 @@ struct UserProfile: Codable {
     )
 }
 
-struct RecommendedFood: Identifiable {
-    let id = UUID()
-    let name: String
-    let nutrients: [Int: Double]
-}
