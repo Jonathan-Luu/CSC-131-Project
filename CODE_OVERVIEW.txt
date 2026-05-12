@@ -99,12 +99,11 @@ NutritionTracker/NutritionStore.swift
 - todaysTotals                               : Computes nutrient totals for entries logged today.
 - historyByDay                               : Groups entries by day, computes daily totals, and marks whether daily goals were met.
 - consistencyPercent                         : Computes the percent of logged days where goals were met.
-- recommendedFoods()                         : Scores the currently static recommendation pool against calorie/protein/cholesterol status. The pool is currently empty.
 - calculateBMR()                             : Calculates estimated daily energy need from profile values using sex, weight, height, age, and activity multiplier.
 - totals(for:)                               : Sums nutrient dictionaries across a list of FoodEntry values.
 - persist(_:)                                : Writes changed goal/entry/profile state to scoped UserDefaults and schedules a cloud write when eligible.
-- loadGoal(forKey:legacyKey:)                : Loads a NutritionGoal from UserDefaults, including legacy goal decoding.
-- loadObject(forKey:legacyKey:defaultValue:) : Generic UserDefaults decode helper with optional legacy-key fallback.
+- loadGoal(forKey:)                          : Loads a NutritionGoal from scoped UserDefaults or returns the default goal.
+- loadObject(forKey:defaultValue:)           : Generic scoped UserDefaults decode helper with a default-value fallback.
 - saveObject(_:forKey:defaults:)             : Encodes a Codable value and writes it to UserDefaults.
 - scopedKey(_:uid:)                          : Adds the user id suffix to a local persistence key when signed in.
 - startFirestoreListener(uid:)               : Registers a Firestore snapshot listener and applies remote goal, entry, and profile data.
@@ -117,9 +116,9 @@ NutritionTracker/NutritionStore.swift
 - ensureUserIsCurrent()                      : Rechecks Firebase's current user and resyncs store scoping if it changed.
 
 NutritionTracker/NutritionDataModels.swift
-- Purpose: Core app data types for goals, logged foods, daily history summaries, user profile data, and simple recommended food objects.
+- Purpose: Core app data types for goals, logged foods, daily history summaries, and user profile data.
 - FoodEntry.init(id:name:nutrients:date:) : Creates a logged food entry and canonicalizes nutrient ids/values.
-- FoodEntry.init(from:)                   : Decodes FoodEntry from modern nutrient dictionaries or legacy calorie/protein/cholesterol fields.
+- FoodEntry.init(from:)                   : Decodes FoodEntry from the current nutrient dictionary format and canonicalizes nutrient ids/values.
 - FoodEntry.encode(to:)                   : Encodes a FoodEntry using the current nutrient dictionary format.
 
 NutritionTracker/NutrientCatalog.swift
