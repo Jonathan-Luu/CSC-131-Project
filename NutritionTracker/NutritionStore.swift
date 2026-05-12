@@ -361,6 +361,21 @@ final class NutritionStore: ObservableObject {
             .collection("nutrition")
             .document("state")
 
+        func firestoreValue<T>(_ value: T?) -> Any {
+            value.map { $0 as Any } ?? NSNull()
+        }
+
+        let profilePayload: [String: Any] = [
+            "age": profile.age,
+            "weightKg": profile.weightKg,
+            "heightCm": profile.heightCm,
+            "isMale": profile.isMale,
+            "activityMultiplier": profile.activityMultiplier,
+            "lastWeightLb": firestoreValue(profile.lastWeightLb),
+            "lastHeightFeet": firestoreValue(profile.lastHeightFeet),
+            "lastHeightInches": firestoreValue(profile.lastHeightInches),
+        ]
+
         let payload: [String: Any] = [
             "goal": [
                 "targets": Dictionary(uniqueKeysWithValues: goal.targets.map { (String($0.key), $0.value) }),
@@ -373,22 +388,14 @@ final class NutritionStore: ObservableObject {
                     "nutrients": Dictionary(uniqueKeysWithValues: e.nutrients.map { (String($0.key), $0.value) }),
                 ] as [String: Any]
             },
-            "profile": [
-                "age": profile.age,
-                "weightKg": profile.weightKg,
-                "heightCm": profile.heightCm,
-                "isMale": profile.isMale,
-                "activityMultiplier": profile.activityMultiplier,
-                "lastWeightLb": profile.lastWeightLb as Any,
-                "lastHeightFeet": profile.lastHeightFeet as Any,
-                "lastHeightInches": profile.lastHeightInches as Any,
-            ],
+            "profile": profilePayload,
             "updatedAt": FieldValue.serverTimestamp(),
         ]
 
         let expectedUid = uid
         doc.setData(payload, merge: true) { [weak self] error in
             guard let self, self.uid == expectedUid, let error else { return }
+            print("Firestore nutrition sync write failed: \(error.localizedDescription)")
             if self.isFirestoreAuthError(error) {
                 self.disableCloudSyncForCurrentUser()
             }
@@ -396,6 +403,7 @@ final class NutritionStore: ObservableObject {
     }
 
     private func handleFirestoreListenerError(_ error: Error) {
+        print("Firestore nutrition sync listener failed: \(error.localizedDescription)")
         if isFirestoreAuthError(error) {
             disableCloudSyncForCurrentUser()
         }
