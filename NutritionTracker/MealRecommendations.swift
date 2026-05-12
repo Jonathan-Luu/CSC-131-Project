@@ -126,8 +126,7 @@ final class MealRecommendationsViewModel: ObservableObject {
                 name: meal.strMeal,
                 thumbURL: meal.strMealThumb.flatMap(URL.init(string:)),
                 focusNutrientIds: focusIds,
-                estimatedNutrientsPerServing: perServing,
-                assumedServingsPerRecipe: assumedServings
+                estimatedNutrientsPerServing: perServing
             )
             scored.append((rec, score))
         }
