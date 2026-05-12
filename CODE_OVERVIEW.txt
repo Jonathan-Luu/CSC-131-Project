@@ -5,91 +5,173 @@ Scope
 -----
 This document explains the purpose of every tracked project/source/resource file and every Swift function, initializer, deinitializer, and important computed view/helper property in the application code.
 
-Root files
-----------
-
-project.yml
-- Purpose: XcodeGen project definition for the NutritionTracker iOS app. It defines the bundle identifier, Swift version, deployment target, app target, source folder, Info.plist path, and shared scheme.
-- Functions: None.
-
-README.md
-- Purpose: High-level repository description and feature summary.
-- Functions: None.
-
-CODE_OVERVIEW.txt
-- Purpose: This documentation file.
-- Functions: None.
-
-Databases/FoodData_Central_foundation_food_json_2025-12-18.json
-- Purpose: Bundled USDA FoodData Central Foundation Foods database used for local food search and nutrient lookup.
-- Functions: None.
-
-NutritionTracker.xcodeproj/project.pbxproj
-- Purpose: Xcode project graph. It lists source files, build phases, target settings, package references, and file group membership.
-- Functions: None.
-
-NutritionTracker.xcodeproj/project.xcworkspace/contents.xcworkspacedata
-- Purpose: Xcode workspace metadata that points the workspace at the project.
-- Functions: None.
-
-NutritionTracker.xcodeproj/project.xcworkspace/xcshareddata/swiftpm/Package.resolved
-- Purpose: Swift Package Manager lockfile for Firebase and related package versions.
-- Functions: None.
-
-NutritionTracker.xcodeproj/project.xcworkspace/xcuserdata/jonathan.xcuserdatad/UserInterfaceState.xcuserstate
-- Purpose: Xcode user interface state file. This is user-specific IDE state, not app logic.
-- Functions: None.
-
-NutritionTracker.xcodeproj/xcshareddata/xcschemes/NutritionTracker.xcscheme
-- Purpose: Shared Xcode scheme describing build/run/test/archive actions for the app target.
-- Functions: None.
-
-NutritionTracker/Info.plist
-- Purpose: App Info.plist values used by iOS and Xcode.
-- Functions: None.
-
-NutritionTracker/GoogleService-Info.plist
-- Purpose: Firebase app configuration, including project and bundle identifiers.
-- Functions: None.
-
-NutritionTracker/Assets.xcassets/Contents.json
-- Purpose: Asset catalog metadata.
-- Functions: None.
-
-NutritionTracker/Assets.xcassets/AppIcon.appiconset/Contents.json
-- Purpose: App icon asset metadata.
-- Functions: None.
-
-NutritionTracker/Assets.xcassets/AppIcon.appiconset/Untitled.png
-- Purpose: App icon image asset.
-- Functions: None.
-
 Swift source files
 ------------------
 
-NutritionTracker/NutritionTrackerApp.swift
+NutritionTrackerApp.swift
 - Purpose: Application entry point and Firebase startup configuration.
 - AppDelegate.application(_:didFinishLaunchingWithOptions:) : Configures Firebase when the app launches and returns success to UIKit.
 - NutritionTrackerApp.body                                  : Creates the app window and injects the shared NutritionStore, FoundationFoodDatabase, and AuthViewModel environment objects.
 
-NutritionTracker/ContentView.swift
+LoginView.swift
+- Purpose: Sign-in/account-creation UI and nested forgot-password flow.
+- LoginView.body                         : Builds the email/password form, submit button, forgot-password link, and mode toggle.
+- ForgotPasswordView.init(initialEmail:) : Initializes the reset screen's email field from the login form.
+- ForgotPasswordView.body                : Builds the reset form, submit button, success/error messaging, and navigation controls.
+
+ContentView.swift
 - Purpose: Root screen router. Shows the main tab interface when signed in and the login flow when signed out.
 - ContentView.body : Builds the signed-in TabView or LoginView and keeps NutritionStore scoped to the current Firebase user.
 
-NutritionTracker/AuthViewModel.swift
-- Purpose: Firebase Authentication view model for sign-in, account creation, password reset, password changes, and sign-out.
-- init()                                                       : Loads the current Firebase user and registers an auth-state listener.
-- deinit                                                       : Removes the Firebase auth-state listener.
-- isSignedIn                                                   : Returns whether a Firebase user is currently available.
-- currentEmail                                                 : Returns the signed-in user's email or a fallback label.
-- submit()                                                     : Validates email/password and either signs in or creates an account.
-- signOut()                                                    : Signs the current Firebase user out and clears local password/error state.
-- clearError()                                                 : Clears the current auth error message.
-- sendPasswordReset(to:)                                       : Validates an email address and asks Firebase to send a reset email.
-- changePassword(currentPassword:newPassword:confirmPassword:) : Validates password inputs, reauthenticates the user, and updates the Firebase password.
-- describe(_:context:)                                         : Converts Firebase/Auth errors into user-facing messages based on operation context.
+DashboardView.swift
+- Purpose: Main nutrition dashboard showing today's progress for active goals and optional untracked nutrient totals.
+- totals                          : Returns today's nutrient totals from NutritionStore.
+- DashboardView.body              : Builds sections for active goal nutrients and an expandable untracked nutrients area.
+- nutrientRow(def:value:)         : Builds a nutrient row with amount text and progress/limit styling.
+- format(_:)                      : Formats numeric nutrient amounts.
+- normalizedProgress(value:goal:) : Clamps progress to the 0...1 range.
+- hasDailyGoal(for:)              : Returns whether a nutrient has an active daily target.
+- additionalDefinitions(in:)      : Returns untracked nutrients for a category.
+- additionalCategoryBinding(for:) : Builds an expansion binding for an untracked nutrient category.
+- untrackedDefinitions            : Returns all tracked nutrients without active daily goals.
 
-NutritionTracker/NutritionStore.swift
+AddFoodView.swift
+- Purpose: Main Add Food tab. Supports manual nutrient entry and TheMealDB lookup.
+- AddFoodView.body                      : Builds the segmented manual/MealDB interface and presents MealDBAddMealSheet.
+- manualForm                            : Builds the manual food-name and nutrient-entry form.
+- mealDBSection                         : Builds the TheMealDB search/results list and loading/error states.
+- ensureManualFields()                  : Initializes manual entry fields for every tracked nutrient.
+- addManual()                           : Validates manual food input, computes missing calories from macros when possible, adds the food, and clears the form.
+- searchMealDB()                        : Searches TheMealDB by meal name and updates result/error state.
+- selectMealDBMeal(_:)                  : Fetches full detail for a selected TheMealDB meal.
+- computeCaloriesFromMacros(nutrients:) : Computes calories from protein, carbohydrates, and fat.
+
+HistoryView.swift
+- Purpose: History tab with calendar navigation, per-day drilldown, all-entry access, and goal consistency summary.
+- HistoryView.body                   : Builds the calendar, all entries link, empty/help text, consistency tracker, day navigation, and month picker sheet.
+- entryDaysInLog                     : Returns dates that have logged entries.
+- goalMetDaysInLog                   : Returns dates whose logged totals met active goals.
+- metGoalDayCount                    : Counts logged days that met active goals.
+- hasActiveGoals                     : Returns whether any goal target is active.
+- today                              : Returns today's start-of-day date.
+- minMonth                           : Returns the earliest supported history month.
+- maxMonth                           : Returns the current month.
+- ConsistencyTrackerView.progress    : Converts a percentage to 0...1 progress.
+- ConsistencyTrackerView.body        : Builds the goal consistency card and progress bar.
+- ConsistencyTrackerView.percentText : Formats the consistency percentage.
+- ConsistencyTrackerView.summaryText : Builds explanatory text for goal consistency state.
+- MonthPickerSheet.body              : Builds the month picker form and Cancel/Go toolbar actions.
+- MonthPickerSheet.monthOptions      : Builds the list of selectable months between min and max.
+- MonthPickerSheet.monthLabel(_:)    : Formats a month label.
+- MonthPickerSheet.clampMonth(_:)    : Clamps a date to the supported month range.
+
+CalendarView.swift
+- Purpose: Reusable monthly calendar used by HistoryView.
+- CalendarView.body                                      : Builds the month header, weekday labels, blank leading cells, and day grid.
+- header                                                 : Builds previous/month-title/next controls.
+- dayCell(for:)                                          : Builds a selectable calendar day with selection, goal-met, entry-dot, disabled, and accessibility states.
+- dayTextStyle(isDisabled:metGoal:)                      : Chooses day text color.
+- entryDotColor(isSelected:metGoal:)                     : Chooses entry-dot color.
+- weekdaySymbols                                         : Returns weekday labels ordered by current calendar first weekday.
+- weekdayHeaderItems                                     : Wraps weekday symbols in stable identifiable values.
+- leadingBlankItems                                      : Builds stable identifiable blank cells before the first day.
+- monthStart                                             : Returns the clamped displayed month start.
+- daysInMonth                                            : Returns all dates in the displayed month.
+- leadingBlankDays                                       : Computes how many blank cells are needed before day 1.
+- canGoPreviousMonth                                     : Returns whether previous-month navigation is allowed.
+- canGoNextMonth                                         : Returns whether next-month navigation is allowed.
+- clampMonth(_:)                                         : Clamps a date to min/max month range.
+- monthTitle(_:)                                         : Formats the displayed month title.
+- accessibilityLabel(for:hasEntries:metGoal:isDisabled:) : Builds VoiceOver text for a calendar day.
+
+DayHistoryView.swift
+- Purpose: Shows entries for one selected history day and supports deletion/detail viewing.
+- entriesForDay                     : Filters store entries to the selected day.
+- DayHistoryView.body               : Builds the day entry list, edit button, and detail sheet.
+- delete(at:)                       : Deletes entries selected from the day-specific list.
+- HistoryEntryRow.body              : Builds a compact entry row.
+- HistoryEntryRow.summaryLine(for:) : Formats calories, protein, fiber, or nutrient count for an entry.
+
+FoodEntryDetailView.swift
+- Purpose: Detail sheet for a logged food entry, including nutrient breakdown and add-again action.
+- trackedIdSet                   : Returns all nutrient ids known to the catalog. Currently unused.
+- FoodEntryDetailView.body       : Builds food metadata, add-again action, macro rows, and nutrient category sections.
+- macroRow(nutrientId:)          : Builds one macro row and handles missing values.
+- labeledNutrientRow(def:value:) : Builds one non-macro nutrient row.
+- formattedAmount(_:unit:)       : Formats a value and appends its unit.
+- format(_:)                     : Formats numeric nutrient amounts.
+
+AllEntriesHistoryView.swift
+- Purpose: Shows all logged entries across all dates.
+- AllEntriesHistoryView.body   : Builds the all-entry list, edit button, and detail sheet.
+- HistoryRow.body              : Builds a compact all-history entry row.
+- HistoryRow.summaryLine(for:) : Formats calories, protein, fiber, or nutrient count for an entry.
+
+GoalsView.swift
+- Purpose: Goals tab for editing, removing, saving, and navigating to add daily nutrition goals.
+- GoalsView.body    : Builds the active-goal form, save button, Add Goal link, and validation message.
+- activeDefinitions : Returns tracked nutrient definitions with active targets.
+- hasUnsavedChanges : Compares draft goal values with persisted goal targets.
+- goalRow(def:)     : Builds one editable goal row with a remove button.
+- syncFromStore()   : Synchronizes draft text fields from NutritionStore goals.
+- removeGoal(_:)    : Sets a goal target to zero and removes it from the draft.
+- saveGoalChanges() : Validates draft targets and writes them to NutritionStore.
+- formatGoal(_:)    : Formats goal values for text fields.
+
+AddGoalView.swift
+- Purpose: Screen for searching/selecting nutrients that do not already have active goals and saving a new target.
+- AddGoalView.body              : Builds the searchable nutrient picker and target-entry alert.
+- nutrientSelectionSection      : Builds the nutrient selection section and empty state.
+- categoryDisclosureGroup(for:) : Builds a category disclosure group when matching nutrients exist.
+- nutrientRow(for:)             : Builds a selectable nutrient row.
+- selectedDefinition            : Resolves the currently selected nutrient definition.
+- activeGoalIds                 : Returns nutrient ids with active goal targets.
+- availableDefinitions          : Returns tracked nutrients that do not already have active goals.
+- filteredAvailableDefinitions  : Filters available definitions by search text.
+- emptyStateMessage             : Returns the correct empty/search result message.
+- filteredDefinitions(in:)      : Returns filtered nutrient definitions for one category.
+- expansionBinding(for:)        : Builds a category expansion binding.
+- select(_:)                    : Selects a nutrient and opens the goal target alert.
+- saveGoal()                    : Validates the target amount and writes the new goal into NutritionStore.
+- alertMessage(for:)            : Builds alert helper text plus validation error text.
+- expandRelevantCategories()    : Expands categories containing search matches.
+- formatGoal(_:)                : Formats default goal values for the alert text field.
+
+MoreView.swift
+- Purpose: More tab linking to Profile, BMR Calculator, and Recommendations.
+- MoreView.body : Builds account/tool navigation sections.
+
+ProfileView.swift
+- Purpose: Account profile screen for displaying current email, changing password, and signing out.
+- ProfileView.body : Builds account email display, password change form, messages, and sign-out button.
+- clearMessages()  : Clears password-change success and auth error messages.
+
+BMRCalculatorView.swift
+- Purpose: Profile editor and estimated daily energy need calculator.
+- Sex.id                       : Uses the raw value as the picker identity.
+- BMRCalculatorView.body       : Builds profile inputs, activity reference text, and estimated energy output.
+- binding(for:)                : Creates a Binding into a writable UserProfile key path.
+- syncUIFromProfile()          : Loads profile values into local UI state, applying defaults and clamps.
+- syncProfileHeightFromUI()    : Converts feet/inches UI values to profile height in centimeters and persists the UI inputs.
+- clearLimitMessages()         : Clears age, weight, and height validation messages.
+- finishEditingProfileFields() : Normalizes age text and clears limit messages when editing ends.
+- ageLimitWarning              : Returns the age bounds warning text.
+- weightLimitWarning           : Returns the weight bounds warning text.
+- heightLimitWarning           : Returns the height bounds warning text.
+- activityReferenceText        : Returns explanatory text for activity multipliers.
+
+RecommendationsView.swift
+- Purpose: Recommendations screen showing missing goals, recommended meals, refresh/loading state, and add-meal lookup.
+- RecommendationsView.body  : Builds the recommendations list, refresh toolbar, lookup loading overlay, initial refresh task, errors, and meal-add sheet.
+- recommendationsLoadingRow : Builds the centered recommendations loading row.
+- openLookup(for:)          : Fetches full meal detail for a selected recommendation and opens the add sheet.
+- summaryLine(_:)           : Formats a short nutrient summary for a recommendation.
+- focusLine(_:)             : Formats the nutrient names a recommendation was chosen to help with.
+- format(_:)                : Formats deficit numbers.
+
+======================================================
+
+NutritionStore.swift
 - Purpose: Central observable app store for goals, food entries, profile data, local persistence, Firebase Firestore sync, daily totals, history, and BMR calculation.
 - init()                                     : Loads cached local state and scopes the store to the current Firebase user.
 - setUser(uid:)                              : Switches all local/cache/cloud state to the supplied Firebase user id or resets to signed-out defaults.
@@ -115,23 +197,7 @@ NutritionTracker/NutritionStore.swift
 - profileIsNonDefault                        : Returns whether the profile differs from the default profile.
 - ensureUserIsCurrent()                      : Rechecks Firebase's current user and resyncs store scoping if it changed.
 
-NutritionTracker/NutritionDataModels.swift
-- Purpose: Core app data types for goals, logged foods, daily history summaries, and user profile data.
-- FoodEntry.init(id:name:nutrients:date:) : Creates a logged food entry and canonicalizes nutrient ids/values.
-- FoodEntry.init(from:)                   : Decodes FoodEntry from the current nutrient dictionary format and canonicalizes nutrient ids/values.
-- FoodEntry.encode(to:)                   : Encodes a FoodEntry using the current nutrient dictionary format.
-
-NutritionTracker/NutrientCatalog.swift
-- Purpose: Defines supported nutrient categories and the tracked USDA nutrient definitions, units, default targets, and maximum/minimum goal behavior.
-- NutrientCatalog.definition(for:)          : Finds a tracked nutrient definition by USDA nutrient id.
-- NutrientCatalog.defaultGoals              : Builds the default goal target dictionary for new installs.
-- NutrientCatalog.goalsMet(totals:targets:) : Returns whether the supplied nutrient totals satisfy all active minimum goals.
-
-NutritionTracker/NutrientNormalization.swift
-- Purpose: Normalizes USDA nutrient aliases into the canonical nutrient ids used by the app.
-- NutrientNormalization.canonicalizeNutrients(_:) : Fills canonical calories from USDA energy aliases, removes alias ids to avoid double-counting, and clamps negative carbohydrate values to zero.
-
-NutritionTracker/FoundationFoodDatabase.swift
+FoundationFoodDatabase.swift
 - Purpose: Loads the bundled USDA foundation foods database, exposes local search, and scales per-100g nutrient values.
 - FDCFoodNutrient.resolvedAmount                   : Returns amount when available, otherwise median.
 - FoundationFoodDatabase.init()                    : Starts loading the bundled database.
@@ -139,50 +205,51 @@ NutritionTracker/FoundationFoodDatabase.swift
 - FoundationFoodDatabase.scaledNutrients(_:grams:) : Scales per-100g nutrient values to a specific gram amount.
 - FoundationFoodDatabase.load()                    : Reads, decodes, normalizes, and publishes foundation food items from the bundled JSON.
 
-NutritionTracker/FoodBrowseCategories.swift
+NutritionDataModels.swift
+- Purpose: Core app data types for goals, logged foods, daily history summaries, and user profile data.
+- FoodEntry.init(id:name:nutrients:date:) : Creates a logged food entry and canonicalizes nutrient ids/values.
+- FoodEntry.init(from:)                   : Decodes FoodEntry from the current nutrient dictionary format and canonicalizes nutrient ids/values.
+- FoodEntry.encode(to:)                   : Encodes a FoodEntry using the current nutrient dictionary format.
+
+NutrientCatalog.swift
+- Purpose: Defines supported nutrient categories and the tracked USDA nutrient definitions, units, default targets, and maximum/minimum goal behavior.
+- NutrientCatalog.definition(for:)          : Finds a tracked nutrient definition by USDA nutrient id.
+- NutrientCatalog.defaultGoals              : Builds the default goal target dictionary for new installs.
+- NutrientCatalog.goalsMet(totals:targets:) : Returns whether the supplied nutrient totals satisfy all active minimum goals.
+
+NutrientNormalization.swift
+- Purpose: Normalizes USDA nutrient aliases into the canonical nutrient ids used by the app.
+- NutrientNormalization.canonicalizeNutrients(_:) : Fills canonical calories from USDA energy aliases, removes alias ids to avoid double-counting, and clamps negative carbohydrate values to zero.
+
+FoodBrowseCategories.swift
 - Purpose: Shared tokenization and ranking logic for local USDA food search.
 - FoodSearchQuery.tokens(from:)                                                   : Lowercases a query, splits into searchable tokens, drops short tokens, and canonicalizes plurals.
 - FoodSearchQuery.normalizedText(from:)                                           : Produces a normalized string from search tokens.
 - FoodSearchQuery.matchesAllTokens(description:fdcCategory:tokens:)               : Checks whether all query tokens are present in a food description or category.
 - FoodSearchQuery.relevanceScore(description:fdcCategory:normalizedQuery:tokens:) : Scores search matches by phrase match, prefix match, category match, token hits, and description length.
-- FoodSearchQuery.canonicalToken(_:)                                              : Applies simple plural normalization for more forgiving search.
+- FoodSearchQuery.canonicalToken(_:)                                              : Applies simple plural normalization for more forgiving search.   
 
-NutritionTracker/DateCalendarExtensions.swift
+DateCalendarExtensions.swift
 - Purpose: Shared Date helpers for day/month normalization and comparisons.
 - Date.startOfDay       : Returns the calendar start of the date's day.
 - Date.startOfMonth     : Returns the first day of the date's month.
 - Date.addingMonths(_:) : Adds calendar months to the date's month start.
 - Date.isSameDay(as:)   : Returns whether two dates fall on the same calendar day.
 
-NutritionTracker/AddFoodView.swift
-- Purpose: Main Add Food tab. Supports manual nutrient entry and TheMealDB lookup.
-- AddFoodView.body                      : Builds the segmented manual/MealDB interface and presents MealDBAddMealSheet.
-- manualForm                            : Builds the manual food-name and nutrient-entry form.
-- mealDBSection                         : Builds the TheMealDB search/results list and loading/error states.
-- ensureManualFields()                  : Initializes manual entry fields for every tracked nutrient.
-- addManual()                           : Validates manual food input, computes missing calories from macros when possible, adds the food, and clears the form.
-- searchMealDB()                        : Searches TheMealDB by meal name and updates result/error state.
-- selectMealDBMeal(_:)                  : Fetches full detail for a selected TheMealDB meal.
-- computeCaloriesFromMacros(nutrients:) : Computes calories from protein, carbohydrates, and fat.
+AuthViewModel.swift
+- Purpose: Firebase Authentication view model for sign-in, account creation, password reset, password changes, and sign-out.
+- init()                                                       : Loads the current Firebase user and registers an auth-state listener.
+- deinit                                                       : Removes the Firebase auth-state listener.
+- isSignedIn                                                   : Returns whether a Firebase user is currently available.
+- currentEmail                                                 : Returns the signed-in user's email or a fallback label.
+- submit()                                                     : Validates email/password and either signs in or creates an account.
+- signOut()                                                    : Signs the current Firebase user out and clears local password/error state.
+- clearError()                                                 : Clears the current auth error message.
+- sendPasswordReset(to:)                                       : Validates an email address and asks Firebase to send a reset email.
+- changePassword(currentPassword:newPassword:confirmPassword:) : Validates password inputs, reauthenticates the user, and updates the Firebase password.
+- describe(_:context:)                                         : Converts Firebase/Auth errors into user-facing messages based on operation context.
 
-NutritionTracker/MealDBAddMealSheet.swift
-- Purpose: Shared sheet for adding a TheMealDB meal from lookup or recommendations with estimated USDA nutrition.
-- MealDBAddMealSheet.body          : Builds the meal detail, servings input, estimated nutrition preview, and add action.
-- recomputePreview()               : Validates servings, estimates recipe nutrition, scales it to requested servings, and updates preview text.
-- addToLog()                       : Validates servings, computes scaled nutrients, adds the meal to the log, and closes the sheet.
-- format(_:)                       : Formats serving/count values compactly.
-- nutritionPreviewText(for:)       : Builds preview text for active goal nutrients only.
-- formattedNutrientAmount(_:unit:) : Formats a nutrient amount with appropriate precision and unit.
-
-NutritionTracker/MealDBNutritionEstimator.swift
-- Purpose: Estimates nutrition for TheMealDB recipes by matching ingredients to USDA foods and scaling by estimated grams.
-- MealDBNutritionEstimator.estimateNutrients(detail:servings:foodDatabase:) : Matches each meal ingredient to USDA foods, scales nutrients by estimated ingredient grams, sums recipe totals, scales by servings, and fills calories if needed.
-- computeCaloriesFromMacros(nutrients:)                                     : Computes calories from protein, carbohydrates, and fat when USDA calories are missing.
-- sanitizeIngredientQuery(_:)                                               : Removes simple stop words from MealDB ingredient names before USDA search.
-- estimateGrams(fromMeasure:)                                               : Parses a MealDB measure string into an estimated gram amount.
-- parseQuantity(_:)                                                         : Local helper inside estimateGrams that parses whole numbers and fractions from quantity text.
-
-NutritionTracker/TheMealDBClient.swift
+TheMealDBClient.swift
 - Purpose: Lightweight API client and response models for TheMealDB search, ingredient filtering, and detail lookup.
 - Meal.id                                   : Exposes idMeal as Identifiable.id.
 - MealDetail.id                             : Exposes idMeal as Identifiable.id.
@@ -197,7 +264,16 @@ NutritionTracker/TheMealDBClient.swift
 - lookupMealDetail(idMeal:)                 : Calls TheMealDB detail endpoint and returns the first meal detail.
 - fetch(_:)                                 : Performs a URLSession request, validates HTTP success, and decodes JSON.
 
-NutritionTracker/MealRecommendations.swift
+MealDBAddMealSheet.swift
+- Purpose: Shared sheet for adding a TheMealDB meal from lookup or recommendations with estimated USDA nutrition.
+- MealDBAddMealSheet.body          : Builds the meal detail, servings input, estimated nutrition preview, and add action.
+- recomputePreview()               : Validates servings, estimates recipe nutrition, scales it to requested servings, and updates preview text.
+- addToLog()                       : Validates servings, computes scaled nutrients, adds the meal to the log, and closes the sheet.
+- format(_:)                       : Formats serving/count values compactly.
+- nutritionPreviewText(for:)       : Builds preview text for active goal nutrients only.
+- formattedNutrientAmount(_:unit:) : Formats a nutrient amount with appropriate precision and unit.
+
+MealRecommendations.swift
 - Purpose: View model and scoring logic for recommending TheMealDB meals based on unmet nutrition goals.
 - refresh(store:foodDatabase:)                                         : Clears state, computes current deficits, guards loading/database state, and rebuilds recommendations.
 - buildRecommendations(deficits:goalTargets:todayTotals:foodDatabase:) : Queries meals by proxy ingredients, estimates nutrition for candidates, scores them against deficits and overage penalties, and returns top recommendations.
@@ -207,143 +283,15 @@ NutritionTracker/MealRecommendations.swift
 - divideNutrients(_:by:)                                               : Divides all nutrient values by a serving divisor.
 - estimateServingsPerRecipe(fromRecipeTotals:)                         : Estimates recipe yield from total calories and clamps it to a reasonable serving count.
 
-NutritionTracker/RecommendationsView.swift
-- Purpose: Recommendations screen showing missing goals, recommended meals, refresh/loading state, and add-meal lookup.
-- RecommendationsView.body  : Builds the recommendations list, refresh toolbar, lookup loading overlay, initial refresh task, errors, and meal-add sheet.
-- recommendationsLoadingRow : Builds the centered recommendations loading row.
-- openLookup(for:)          : Fetches full meal detail for a selected recommendation and opens the add sheet.
-- summaryLine(_:)           : Formats a short nutrient summary for a recommendation.
-- focusLine(_:)             : Formats the nutrient names a recommendation was chosen to help with.
-- format(_:)                : Formats deficit numbers.
+MealDBNutritionEstimator.swift
+- Purpose: Estimates nutrition for TheMealDB recipes by matching ingredients to USDA foods and scaling by estimated grams.
+- MealDBNutritionEstimator.estimateNutrients(detail:servings:foodDatabase:) : Matches each meal ingredient to USDA foods, scales nutrients by estimated ingredient grams, sums recipe totals, scales by servings, and fills calories if needed.
+- computeCaloriesFromMacros(nutrients:)                                     : Computes calories from protein, carbohydrates, and fat when USDA calories are missing.
+- sanitizeIngredientQuery(_:)                                               : Removes simple stop words from MealDB ingredient names before USDA search.
+- estimateGrams(fromMeasure:)                                               : Parses a MealDB measure string into an estimated gram amount.
+- parseQuantity(_:)                                                         : Local helper inside estimateGrams that parses whole numbers and fractions from quantity text.
 
-NutritionTracker/DashboardView.swift
-- Purpose: Main nutrition dashboard showing today's progress for active goals and optional untracked nutrient totals.
-- totals                          : Returns today's nutrient totals from NutritionStore.
-- DashboardView.body              : Builds sections for active goal nutrients and an expandable untracked nutrients area.
-- nutrientRow(def:value:)         : Builds a nutrient row with amount text and progress/limit styling.
-- format(_:)                      : Formats numeric nutrient amounts.
-- normalizedProgress(value:goal:) : Clamps progress to the 0...1 range.
-- hasDailyGoal(for:)              : Returns whether a nutrient has an active daily target.
-- additionalDefinitions(in:)      : Returns untracked nutrients for a category.
-- additionalCategoryBinding(for:) : Builds an expansion binding for an untracked nutrient category.
-- untrackedDefinitions            : Returns all tracked nutrients without active daily goals.
 
-NutritionTracker/GoalsView.swift
-- Purpose: Goals tab for editing, removing, saving, and navigating to add daily nutrition goals.
-- GoalsView.body    : Builds the active-goal form, save button, Add Goal link, and validation message.
-- activeDefinitions : Returns tracked nutrient definitions with active targets.
-- hasUnsavedChanges : Compares draft goal values with persisted goal targets.
-- goalRow(def:)     : Builds one editable goal row with a remove button.
-- syncFromStore()   : Synchronizes draft text fields from NutritionStore goals.
-- removeGoal(_:)    : Sets a goal target to zero and removes it from the draft.
-- saveGoalChanges() : Validates draft targets and writes them to NutritionStore.
-- formatGoal(_:)    : Formats goal values for text fields.
 
-NutritionTracker/AddGoalView.swift
-- Purpose: Screen for searching/selecting nutrients that do not already have active goals and saving a new target.
-- AddGoalView.body              : Builds the searchable nutrient picker and target-entry alert.
-- nutrientSelectionSection      : Builds the nutrient selection section and empty state.
-- categoryDisclosureGroup(for:) : Builds a category disclosure group when matching nutrients exist.
-- nutrientRow(for:)             : Builds a selectable nutrient row.
-- selectedDefinition            : Resolves the currently selected nutrient definition.
-- activeGoalIds                 : Returns nutrient ids with active goal targets.
-- availableDefinitions          : Returns tracked nutrients that do not already have active goals.
-- filteredAvailableDefinitions  : Filters available definitions by search text.
-- emptyStateMessage             : Returns the correct empty/search result message.
-- filteredDefinitions(in:)      : Returns filtered nutrient definitions for one category.
-- expansionBinding(for:)        : Builds a category expansion binding.
-- select(_:)                    : Selects a nutrient and opens the goal target alert.
-- saveGoal()                    : Validates the target amount and writes the new goal into NutritionStore.
-- alertMessage(for:)            : Builds alert helper text plus validation error text.
-- expandRelevantCategories()    : Expands categories containing search matches.
-- formatGoal(_:)                : Formats default goal values for the alert text field.
 
-NutritionTracker/HistoryView.swift
-- Purpose: History tab with calendar navigation, per-day drilldown, all-entry access, and goal consistency summary.
-- HistoryView.body                   : Builds the calendar, all entries link, empty/help text, consistency tracker, day navigation, and month picker sheet.
-- entryDaysInLog                     : Returns dates that have logged entries.
-- goalMetDaysInLog                   : Returns dates whose logged totals met active goals.
-- metGoalDayCount                    : Counts logged days that met active goals.
-- hasActiveGoals                     : Returns whether any goal target is active.
-- today                              : Returns today's start-of-day date.
-- minMonth                           : Returns the earliest supported history month.
-- maxMonth                           : Returns the current month.
-- ConsistencyTrackerView.progress    : Converts a percentage to 0...1 progress.
-- ConsistencyTrackerView.body        : Builds the goal consistency card and progress bar.
-- ConsistencyTrackerView.percentText : Formats the consistency percentage.
-- ConsistencyTrackerView.summaryText : Builds explanatory text for goal consistency state.
-- MonthPickerSheet.body              : Builds the month picker form and Cancel/Go toolbar actions.
-- MonthPickerSheet.monthOptions      : Builds the list of selectable months between min and max.
-- MonthPickerSheet.monthLabel(_:)    : Formats a month label.
-- MonthPickerSheet.clampMonth(_:)    : Clamps a date to the supported month range.
 
-NutritionTracker/CalendarView.swift
-- Purpose: Reusable monthly calendar used by HistoryView.
-- CalendarView.body                                      : Builds the month header, weekday labels, blank leading cells, and day grid.
-- header                                                 : Builds previous/month-title/next controls.
-- dayCell(for:)                                          : Builds a selectable calendar day with selection, goal-met, entry-dot, disabled, and accessibility states.
-- dayTextStyle(isDisabled:metGoal:)                      : Chooses day text color.
-- entryDotColor(isSelected:metGoal:)                     : Chooses entry-dot color.
-- weekdaySymbols                                         : Returns weekday labels ordered by current calendar first weekday.
-- weekdayHeaderItems                                     : Wraps weekday symbols in stable identifiable values.
-- leadingBlankItems                                      : Builds stable identifiable blank cells before the first day.
-- monthStart                                             : Returns the clamped displayed month start.
-- daysInMonth                                            : Returns all dates in the displayed month.
-- leadingBlankDays                                       : Computes how many blank cells are needed before day 1.
-- canGoPreviousMonth                                     : Returns whether previous-month navigation is allowed.
-- canGoNextMonth                                         : Returns whether next-month navigation is allowed.
-- clampMonth(_:)                                         : Clamps a date to min/max month range.
-- monthTitle(_:)                                         : Formats the displayed month title.
-- accessibilityLabel(for:hasEntries:metGoal:isDisabled:) : Builds VoiceOver text for a calendar day.
-
-NutritionTracker/DayHistoryView.swift
-- Purpose: Shows entries for one selected history day and supports deletion/detail viewing.
-- entriesForDay                     : Filters store entries to the selected day.
-- DayHistoryView.body               : Builds the day entry list, edit button, and detail sheet.
-- delete(at:)                       : Deletes entries selected from the day-specific list.
-- HistoryEntryRow.body              : Builds a compact entry row.
-- HistoryEntryRow.summaryLine(for:) : Formats calories, protein, fiber, or nutrient count for an entry.
-
-NutritionTracker/AllEntriesHistoryView.swift
-- Purpose: Shows all logged entries across all dates.
-- AllEntriesHistoryView.body   : Builds the all-entry list, edit button, and detail sheet.
-- HistoryRow.body              : Builds a compact all-history entry row.
-- HistoryRow.summaryLine(for:) : Formats calories, protein, fiber, or nutrient count for an entry.
-
-NutritionTracker/FoodEntryDetailView.swift
-- Purpose: Detail sheet for a logged food entry, including nutrient breakdown and add-again action.
-- trackedIdSet                   : Returns all nutrient ids known to the catalog. Currently unused.
-- FoodEntryDetailView.body       : Builds food metadata, add-again action, macro rows, and nutrient category sections.
-- macroRow(nutrientId:)          : Builds one macro row and handles missing values.
-- labeledNutrientRow(def:value:) : Builds one non-macro nutrient row.
-- formattedAmount(_:unit:)       : Formats a value and appends its unit.
-- format(_:)                     : Formats numeric nutrient amounts.
-
-NutritionTracker/LoginView.swift
-- Purpose: Sign-in/account-creation UI and nested forgot-password flow.
-- LoginView.body                         : Builds the email/password form, submit button, forgot-password link, and mode toggle.
-- ForgotPasswordView.init(initialEmail:) : Initializes the reset screen's email field from the login form.
-- ForgotPasswordView.body                : Builds the reset form, submit button, success/error messaging, and navigation controls.
-
-NutritionTracker/ProfileView.swift
-- Purpose: Account profile screen for displaying current email, changing password, and signing out.
-- ProfileView.body : Builds account email display, password change form, messages, and sign-out button.
-- clearMessages()  : Clears password-change success and auth error messages.
-
-NutritionTracker/BMRCalculatorView.swift
-- Purpose: Profile editor and estimated daily energy need calculator.
-- Sex.id                       : Uses the raw value as the picker identity.
-- BMRCalculatorView.body       : Builds profile inputs, activity reference text, and estimated energy output.
-- binding(for:)                : Creates a Binding into a writable UserProfile key path.
-- syncUIFromProfile()          : Loads profile values into local UI state, applying defaults and clamps.
-- syncProfileHeightFromUI()    : Converts feet/inches UI values to profile height in centimeters and persists the UI inputs.
-- clearLimitMessages()         : Clears age, weight, and height validation messages.
-- finishEditingProfileFields() : Normalizes age text and clears limit messages when editing ends.
-- ageLimitWarning              : Returns the age bounds warning text.
-- weightLimitWarning           : Returns the weight bounds warning text.
-- heightLimitWarning           : Returns the height bounds warning text.
-- activityReferenceText        : Returns explanatory text for activity multipliers.
-
-NutritionTracker/MoreView.swift
-- Purpose: More tab linking to Profile, BMR Calculator, and Recommendations.
-- MoreView.body : Builds account/tool navigation sections.
