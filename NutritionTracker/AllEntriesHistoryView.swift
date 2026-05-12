@@ -14,7 +14,7 @@ struct AllEntriesHistoryView: View {
                     Button {
                         detailEntry = entry
                     } label: {
-                        HistoryRow(entry: entry)
+                        HistoryEntryRow(entry: entry)
                     }
                     .buttonStyle(.plain)
                 }
@@ -32,35 +32,3 @@ struct AllEntriesHistoryView: View {
         }
     }
 }
-
-private struct HistoryRow: View {
-    let entry: FoodEntry
-
-    var body: some View {
-        VStack(alignment: .leading, spacing: 6) {
-            Text(entry.name)
-                .font(.headline)
-            Text(summaryLine(for: entry))
-                .font(.subheadline)
-                .foregroundStyle(.secondary)
-            Text(entry.date.formatted(date: .abbreviated, time: .shortened))
-                .font(.caption)
-                .foregroundStyle(.secondary)
-        }
-        .padding(.vertical, 2)
-        .frame(maxWidth: .infinity, alignment: .leading)
-        .contentShape(Rectangle())
-    }
-
-    private func summaryLine(for entry: FoodEntry) -> String {
-        let c = entry.nutrients[1008].map { String(format: "%.0f kcal", $0) }
-        let p = entry.nutrients[1003].map { String(format: "%.0fg protein", $0) }
-        let f = entry.nutrients[1079].map { String(format: "%.1fg fiber", $0) }
-        let parts = [c, p, f].compactMap { $0 }
-        if parts.isEmpty {
-            return "\(entry.nutrients.count) nutrient values"
-        }
-        return parts.joined(separator: " · ")
-    }
-}
-

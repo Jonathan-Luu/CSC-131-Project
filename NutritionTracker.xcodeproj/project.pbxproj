@@ -117,8 +117,8 @@
 			isa = PBXGroup;
 			children = (
 				A1B2C3D4E5F6000000000201 /* NutritionTrackerApp.swift */,
-				AB752DE12F99C000007A2817 /* LoginView.swift */,
 				A1B2C3D4E5F6000000000202 /* ContentView.swift */,
+				AB752DE12F99C000007A2817 /* LoginView.swift */,
 				A1B2C3D4E5F6000000000205 /* DashboardView.swift */,
 				A1B2C3D4E5F6000000000206 /* AddFoodView.swift */,
 				A1B2C3D4E5F6000000000207 /* HistoryView.swift */,

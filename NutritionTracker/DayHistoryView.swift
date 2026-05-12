@@ -45,7 +45,7 @@ struct DayHistoryView: View {
     }
 }
 
-private struct HistoryEntryRow: View {
+struct HistoryEntryRow: View {
     let entry: FoodEntry
 
     var body: some View {
@@ -75,4 +75,3 @@ private struct HistoryEntryRow: View {
         return parts.joined(separator: " · ")
     }
 }
-

@@ -103,9 +103,7 @@ FoodEntryDetailView.swift
 
 AllEntriesHistoryView.swift
 - Purpose: Shows all logged entries across all dates.
-- AllEntriesHistoryView.body   : Builds the all-entry list, edit button, and detail sheet.
-- HistoryRow.body              : Builds a compact all-history entry row.
-- HistoryRow.summaryLine(for:) : Formats calories, protein, fiber, or nutrient count for an entry.
+- AllEntriesHistoryView.body : Builds the all-entry list, edit button, detail sheet, and shared HistoryEntryRow rows.
 
 GoalsView.swift
 - Purpose: Goals tab for editing, removing, saving, and navigating to add daily nutrition goals.
@@ -290,7 +288,6 @@ MealDBNutritionEstimator.swift
 - sanitizeIngredientQuery(_:)                                               : Removes simple stop words from MealDB ingredient names before USDA search.
 - estimateGrams(fromMeasure:)                                               : Parses a MealDB measure string into an estimated gram amount.
 - parseQuantity(_:)                                                         : Local helper inside estimateGrams that parses whole numbers and fractions from quantity text.
-
 
 
 
